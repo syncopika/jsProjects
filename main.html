@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>syncopika's animation app</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+var layerArray = ['canvas0'];
+var curPage = 0;
+var curCanvas = layerArray[curPage];
+</script>
+<script src="C:\Documents and Settings\HUNG\Desktop\website practice\filterslib.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+</head>
+
+<style>
+h1,p{
+text-align:center;
+}
+
+#rightCol{
+text-align:center;
+}
+
+#toolbar, #filters{
+margin: 10px auto;
+border: black 1px solid;
+padding:2px;
+width:550px;
+text-align:center;
+margin-bottom: 5%;
+}
+
+#toolbar button, #filters button{
+margin-bottom: 5px;
+padding-left: 2px;
+padding-right: 2px;
+}
+
+#canvas0{
+border: 1px black solid;
+}
+
+#counter{
+text-align:center;
+}
+
+li{
+display:inline-block;
+}
+
+#picture{
+width: 650px;
+display:block;
+margin:0 auto;
+text-align:center;
+}
+
+#colorPicker, #playPanel{
+width: 550px;
+margin: 0 auto;
+margin-bottom: 30px;
+text-align:center;
+}
+
+table{
+margin: 0 auto;
+}
+
+#colorTable tr td{
+border: 1px black solid
+}
+
+#showColor{
+border: 1px black solid;
+}
+
+#footer{
+height: 45px;
+}
+
+</style>
+
+<body>
+<div id='container' class='container'>
+
+<div class='row'>
+	<h1>animation/drawing app</h1>
+	<p>link to source code</p>
+</div>
+
+<div class='row'>
+	<div class='col-md-8 col-md-offset-2'>
+	<p class='bg-danger'>some brush features may not work well right now...sorry</b></p>
+</div>
+</div>
+
+<div class='row'>
+	<div class='col-md-12' id='counter'>
+		<ul>
+			<li id='down'><h1><=</h1></li>
+			<li><h2 id='count'></h2></li>
+			<li id='up'><h1>=></h1></li>
+		</ul>
+	</div>
+</div>
+
+<div class='row'>
+										
+	<div id='picture' class='col-md-7'>
+		<canvas id="canvas0" width='600' height='600' class='canvas'></canvas> 
+	</div>
+
+	<div id='rightCol' class='col-md-5'>
+		<h2>toolbar</h2>
+		<p>tips:</p>
+		<p>-use spacebar to add a new layer!</p>
+		<p>-use the arrow keys to go forward or backward!</p>
+
+			<div id='toolbar'>
+			  <p class="text-info"> general tools </p>
+				<button id = 'import' class='btn' onclick='openFile(handleFile)'>import pic</button>
+				<input id="fileInput" style="display:none;" type="file">
+				<button id='clear' class='btn'>clear</button>
+				<button id='reset' class='btn'>reset</button>
+				<button id='5' class='size btn'>normal size</button>
+				<button id='2' class='size btn'>small size</button>
+				<button id='cbrush' class='btn'>crazy brush</button>
+				<button id='lbrush' class='btn'>long brush</button>
+				<button id='#ffcf33' class ='color btn'>yellow</button>
+				<button id='#affec4' class ='color btn'>green</button>
+				<button id='#ffffff' class ='color btn'>eraser</button>
+				<button id='addPage' class='btn'>add another layer</button>
+				<button id ='clone' class='btn'> clone current layer</button>
+			</div>
+			
+			<div id='filters'>
+			  <p class="text-info"> filters </p>
+				<button id='gray' class='btn' onclick='filterCanvas(grayscale)'>grayscale</button>
+				<button id='sepia' class='btn' onclick='filterCanvas(sepia)'>sepia</button>
+				<button id='saturate' class='btn' onclick='filterCanvas(saturate)'>saturate</button>
+				<button id='swap' class='btn' onclick='filterCanvas(swap)'>swap</button>
+				<button id='banded' class='btn' onclick='filterCanvas(banded)'>banded</button>
+				<button id='scary' class='btn' onclick='filterCanvas(scary)'>scary</button>
+				<button id='something' class='btn' onclick='filterCanvas(something)'>something</button>
+				<button id='something2' class='btn' onclick='filterCanvas(something2)'>something2</button>
+				<button id='reset' class='btn' onclick='reset()'>reset</button>
+			</div>
+
+			<div id='colorPicker'>
+				<p class="text-info"> custom colors </p>
+				<table id='colorTable'>
+					<tr>
+					<td id='showColor' colspan='3'>SHOW COLOR HERE</td>
+					</tr>
+						<tr>
+						<td>red</td>
+						<td>blue</td>
+						<td>green</td>
+						</tr>
+							<tr>
+							<td><input type='text' id='red'></td>
+							<td><input type='text' id='blue'></td>
+							<td><input type='text' id='green'></td>
+							</tr>
+						<tr>
+						<td colspan='3'><button class='btn' id='setColor'>set color</button></td>
+						</tr>
+				</table>
+			</div>
+			
+			<div id='playPanel'>
+				<p class='text-info'>play panel</p>
+				<button id='forward' class='btn' onclick = 'playForward()'> => </button>
+				<button id='stop' class='btn' onclick = 'stop()'> stop </button>
+				<button id='backward' class='btn' onclick='playBackward()'> <= </button>
+			</div>
+
+		</div> <!--end toolbar (right col) -->
+
+</div> <!-- end row-->
+
+<div id='footer' class='row'>
+</div>
+
+</div> <!--close container -->
+
+
+<script> 
+
+//stuff for the page-count thing at the top
+var page = 0;
+$('#count').html(curPage);//make sure 0 shows up when page loads
+
+//these gigantic objects will store all the pixel data for each canvas!
+//ideally the user might want to go back to a canvas and manipulate that canvas
+//this will allow individual canvas manipulation whenever you want.
+//the index of each array within dataX or dataY will correspond with the page number.
+var dataX = {};
+var dataY = {};
+var dataColor = {};
+var dataDrag = {};
+var dataSize = {};
+
+//store ALL coordinates for current canvas 
+//declare these variables here for the initial canvas
+//the purpose of these current array variables is to allow for canvas cloning
+var curClickX = []; 
+var curClickY = [];
+var curClickColor = [];
+var curClickDrag = [];
+var curClickSize = [];
+
+//temp arrays store pixel data for current canvas. if you switch frames, these arrays clear.  
+var clickX = [];
+var clickY = [];
+var clickDrag = [];
+var clickColor = [];
+var clickSize = [];
+
+//new arrays for the click arrays
+function clearClick(){
+clickX = [];
+clickY = [];
+clickDrag = [];
+clickColor = [];
+clickSize = [];
+}
+
+//new arrays for the curClick arrays
+function clearCurClick(){
+curClickX = [];
+curClickY = [];
+curClickDrag = [];
+curClickColor = [];
+curClickSize = [];
+}
+
+var lbrush = 0; 
+var curSize = 5;
+var cbrush = 0;
+var curColor = '#df4b26';
+
+var theCanvas = document.getElementById(curCanvas);
+var context = theCanvas.getContext("2d");
+
+//set initial canvas bg color to white!
+context.fillStyle = "#FFFFFF";
+context.fillRect(0,0,600,600);
+
+
+//define redraw
+function redraw(){
+
+context.lineJoin = 'round';
+
+for(var i = 0; i < clickX.length; i++){
+  context.beginPath();
+  if(clickDrag[i] && i){ //this is the default condition??
+  context.moveTo(clickX[i-1], clickY[i-1]);
+  }
+  else{
+	if(lbrush === 1){
+	cbrush = 0;
+	context.moveTo(clickX[i], clickY[i]+10);
+	}
+	else if(cbrush === 1){
+	lbrush = 0;
+	context.moveTo(clickX[i-2], clickY[i-1]+10);
+	}
+	else{
+	context.moveTo(clickX[i], clickY[i]+1);
+	}
+  }
+  context.lineTo(clickX[i], clickY[i]);
+  context.closePath();
+  context.strokeStyle = clickColor[i];
+  context.lineWidth = clickSize[i]; 
+  context.stroke(); 
+}
+};
+
+
+//define draw 
+function draw(){
+var paint;
+var rect = theCanvas.getBoundingClientRect();
+
+function addClick(x, y, dragging){
+clickX.push(x);
+clickY.push(y);
+clickDrag.push(dragging);
+clickColor.push(curColor);
+clickSize.push(curSize);
+
+curClickX.push(x);
+curClickY.push(y);
+curClickDrag.push(dragging);
+curClickColor.push(curColor);
+curClickSize.push(curSize);
+}
+
+//#picture is the container of the canvas, so I used #picture to get the top and left coordinates
+var offsetTop = $('#picture').position()["top"];  
+var offsetLeft = $('#picture').position()["left"];
+
+$('#' + curCanvas).mousedown(function(e){
+if(e.which === 1){ //when left click only
+paint = true;
+var mouseX = e.pageX - offsetLeft - 25;
+var mouseY = e.pageY - offsetTop;
+addClick(mouseX, mouseY);
+redraw();
+}
+});
+
+$('#' + curCanvas).mousemove(function(e) {
+  if (paint){
+     if(cbrush === 1 || lbrush === 1){
+	 addClick(e.pageX - offsetLeft - 25, e.pageY - offsetTop);
+	 }
+	 else{
+	 //set dragging to 1 = solid lines when moving the mouse. 
+	 addClick(e.pageX - offsetLeft - 25, e.pageY - offsetTop, 1);
+	 }
+	 redraw();
+}
+});
+
+$('#' + curCanvas).mouseup(function(e) {
+//log new pixel data every time a canvas is drawn on!
+pixelData();
+paint = false;
+if(cbrush === 1){
+clearClick();
+}
+});
+
+$('#' + curCanvas).mouseleave(function(e){
+paint = false;
+});
+
+$('#clear').click(function(){
+context = document.getElementById(curCanvas).getContext("2d");
+context.clearRect(0, 0, theCanvas.width, theCanvas.height);
+
+clearClick();
+clearCurClick();
+//reset saved pixel data
+dataX[curCanvas] = [];
+dataY[curCanvas] = [];
+dataDrag[curCanvas] = [];
+dataColor[curCanvas] = [];
+dataSize[curCanvas] = [];
+});
+
+$(".color").click(function(){
+curColor = this.id;
+});
+
+$(".size").click(function(){
+curSize = this.id;
+});
+
+$("#reset").click(function(){
+cbrush = 0;
+lbrush = 0;
+curSize = 5;
+curColor = '#df4b26';
+});
+
+
+$("#lbrush").click(function(){
+clearClick();
+lbrush = 1;
+cbrush = 0;
+});
+
+$("#cbrush").click(function(){
+clearClick();
+lbrush = 0;
+cbrush = 1;
+});
+
+};//end draw function
+
+//setting up for adding layers....
+var top = $('#canvas0').position()["top"];  
+var left = $('#canvas0').position()["left"];
+
+//add a new canvas
+$("#addPage").click(addPage);
+
+function addPage(){
+page = page + 1;
+var canvasClone = $('#canvas0').clone();
+var newId = 'canvas' + page;
+layerArray.push(newId);
+canvasClone.addClass('canvas');
+canvasClone.attr('id', newId);
+canvasClone.css({"position": "absolute", "top": top+"px", "left": left+"px", "z-index":0, "border": "1px black solid", "opacity":0});
+canvasClone.appendTo('#picture');
+
+//set canvas bg color to white!
+$('#' + newId)[0].getContext('2d').fillStyle = "#FFFFFF";
+$('#' + newId)[0].getContext('2d').fillRect(0,0,600,600);
+
+}
+
+//clone the previous canvas
+$("#clone").click(clonePage);
+
+function clonePage(){
+page = page + 1;
+var canvasClone = $('#' + curCanvas).clone();//cloning the previous canvas only copies the canvas, not what's in it...
+var newId = 'canvas' + page;
+layerArray.push(newId);
+canvasClone.addClass('canvas');
+canvasClone.attr('id', newId);
+canvasClone.css({"position": "absolute", "top": top+"px", "left": left+"px", "z-index":0, "border": "1px black solid", "opacity":.4});
+canvasClone.appendTo('#picture');
+
+//set canvas bg color to white!
+$('#' + newId)[0].getContext('2d').fillStyle = "#FFFFFF";
+$('#' + newId)[0].getContext('2d').fillRect(0,0,600,600);
+
+//append new cloned canvas id to dataX, dataY objects with cloned pixel data.
+dataX[newId] = dataX[curCanvas];
+dataY[newId] = dataY[curCanvas];
+dataDrag[newId] = dataDrag[curCanvas];
+dataColor[newId] = dataColor[curCanvas];
+dataSize[newId] = dataSize[curCanvas];
+
+context = document.getElementById(newId).getContext("2d");
+
+//cloning a page should only reflect the pixel data of the current canvas!!
+//meaning you have to assign clickX, clickY, etc. => dataX[curPage], dataY[curPage], etc...
+clickX = dataX[curCanvas];
+clickY = dataY[curCanvas];
+clickDrag = dataDrag[curCanvas];
+clickColor = dataColor[curCanvas];
+clickSize = dataSize[curCanvas];
+
+//redraw with new clickX, etc. data
+redraw();
+};
+
+//function for storing/modifying pixel data for each canvas
+function pixelData(){
+
+if(dataX[curCanvas] === undefined){
+dataX[curCanvas] = curClickX;
+dataY[curCanvas] = curClickY;
+dataColor[curCanvas] = curClickColor;
+dataDrag[curCanvas] = curClickDrag;
+dataSize[curCanvas] = curClickSize;
+}
+
+if(dataX[curCanvas] !== 'undefined' && curClickX.length > 0){
+dataX[curCanvas] = dataX[curCanvas].concat(curClickX);
+dataY[curCanvas] = dataY[curCanvas].concat(curClickY);
+dataColor[curCanvas] = dataColor[curCanvas].concat(curClickColor);
+dataDrag[curCanvas] = dataDrag[curCanvas].concat(curClickDrag);
+dataSize[curCanvas] = dataSize[curCanvas].concat(curClickSize);
+}
+}
+
+//UP
+function up(){
+
+if(curPage < page){
+curPage = curPage + 1;
+$('#count').html(curPage);
+curCanvas = layerArray[curPage];
+$('#' + curCanvas).css({"z-index":10, "opacity": .8}); //if canvas wasn't white, you could set this to 1. but if you keep a white background, curCanvas needs to be somewhat opaque.
+
+context = document.getElementById(curCanvas).getContext("2d");
+
+for(i=0;i<layerArray.length;i++){
+if(layerArray[i] !== curCanvas){
+$('#' + layerArray[i]).css({"z-index":0,"opacity":0});
+$('#' + layerArray[i]).mousedown(function(){ 
+paint = false;
+})
+}
+};
+//set only the second-to-last canvas a lower opacity
+$('#' + layerArray[curPage-1]).css({"z-index":0,"opacity":.6});
+}
+
+//reset
+//when you leave a frame, reset everything!
+clearClick();
+clearCurClick();
+
+draw();
+}
+
+//DOWN
+function down(){
+
+if(curPage > 0){
+curPage = curPage - 1;
+$('#count').html(curPage);
+curCanvas = layerArray[curPage];
+$('#' + curCanvas).css({"z-index":10, "opacity": .8});
+}
+
+context = document.getElementById(curCanvas).getContext("2d");
+
+for(i=0;i<layerArray.length;i++){
+if(layerArray[i] !== curCanvas){
+$('#' + layerArray[i]).css({"z-index":0,"opacity":0});
+$('#' + layerArray[i]).mousedown(function(){ 
+paint = false;
+})
+}
+};
+$('#' + layerArray[curPage-1]).css({"z-index":0,"opacity":.6});
+
+//when you leave a frame, reset everything!
+clearClick();
+clearCurClick();
+
+draw();
+};
+
+//COLOR PICKER
+$('#setColor').click(function(){
+var redValue = $('#red').val(); //.val() is for jquery, .value is for regular ecmascript!
+var blueValue = $('#blue').val();
+var greenValue = $('#green').val();
+var newColor = 'rgb(' + redValue + ',' + greenValue + ',' + blueValue + ')';
+$('#showColor').css({'background-color': newColor});
+curColor = newColor;
+});
+
+$("#up").click(up);
+$("#down").click(down);
+
+//keymapping
+$(document).keydown(function(e){
+switch(e.which){
+    case 37: //left arrow key
+	down();
+	break;
+	case 39: //right arrow key
+	up();
+	break;
+	case 32: //space bar
+	addPage();
+	break;
+	default:
+	return;
+	}
+	e.preventDefault();
+});
+
+var play;
+//functions for animation playback
+function playForward(){
+play = null;
+play = setInterval(up,1000);
+}
+
+function playBackward(){
+play = null;
+//autofocus on last frame
+$('#' + layerArray[layerArray.length-1]).css({"z-index":10, "opacity": .8});
+curCanvas = layerArray[page];
+curPage = page;
+//
+play = setInterval(down,1000);
+}
+
+function stop(){
+clearInterval(play);
+}
+
+$(document).ready(function(){
+draw();
+});
+//end
+
+</script>
+
+</body>
+
+
+</html>
