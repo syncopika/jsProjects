@@ -38,42 +38,50 @@ background-color: #DDDFFF;
 <h1 class='text-center'> audio player 1</h1>
 
 <div id='player1'>
-<p> regular HTML5 audio player here </p>
-<audio id='demo' src='C:\Documents and Settings\HUNG\Desktop\あすいろ恋模様 full SB69クリティクリスタ.mp3' controls preload='auto'></audio>
-<p>name of audio file: </p>
-<p id='audioName'></p>
+
+	<p> regular HTML5 audio player here </p>
+	<audio id='demo' src='C:\Documents and Settings\HUNG\Desktop\あすいろ恋模様 full SB69クリティクリスタ.mp3' controls preload='auto'></audio>
+	<p>name of audio file: </p>
+	<p id='audioName'></p>
 
 
-<div id='control'>
-<p>some controls go here...</p>
-<p>**tip! 'import audio' will import your selected audio file to both the default audio player and to 'audio player 2'. The difference is that 'audio player 2' can manage more interesting manipulations of the audio. ***</p>
-</div>
+	<div id='control'>
+	<p>some controls go here...</p>
+	<p>**tip! 'import audio' will import your selected audio file to both the default audio player and to 'audio player 2'. The difference is that 'audio player 2' can manage more interesting manipulations of the audio. ***</p>
+	</div>
+
 </div>
 
 
 <div id='player2' class='row'>
-	<p>modified audio player using Web Audio API here: (player 2)</p>
+	
+    <p>modified audio player using Web Audio API here: (player 2)</p>
+    
     <div id='progressBar'></div>
-	<p id='songLength'></p>
-	<button id='play' class='btn'>play audio file</button>
-	<button id='stop' class='btn'>stop audio file</button>
+    <p id='songLength'></p>
+    
+    <button id='play' class='btn'>play audio file</button>
+    <button id='stop' class='btn'>stop audio file</button>
+    
 </div>
 	
 
 <div id='tools'>
-<h2 class='text-center'>toolbar for modifying audio (player 2)</h2>
-<button class='btn' onclick='openFile(handleFile)'>import audio file</button>
-<input type='file' id='inputFile' style="display:none;">
 
-<p>Set playback rate</p>
-<input class="playback-rate-control" type="range" min="0.25" max="3" step="0.05" value="1">
-<span id="playbackValue">1.0</span>
+	<h2 class='text-center'>toolbar for modifying audio (player 2)</h2>
+	<button class='btn' onclick='openFile(handleFile)'>import audio file</button>
+	<input type='file' id='inputFile' style="display:none;">
+
+	<p>Set playback rate</p>
+	<input class="playback-rate-control" type="range" min="0.25" max="3" step="0.05" value="1">
+	<span id="playbackValue">1.0</span>
 
 </div>
 
 </div><!--close container -->
 
 <script>
+//resources:
 //http://joshondesign.com/p/books/canvasdeepdive/chapter12.html
 //https://github.com/mdn/decode-audio-data/blob/gh-pages/index.html
 //https://developer.mozilla.org/en-US/docs/Web/API/AudioBufferSourceNode/playbackRate
@@ -85,9 +93,7 @@ var audioName = document.getElementById("audioName");
 var songLength = document.getElementById("songLength");
 var myAudio = document.querySelector("audio"); //fetch the html audio element
 
-
 //variables for manipulating audio
-
 //player2 specific
 var progBar;
 var ctx;
@@ -100,15 +106,12 @@ var duration; //duration of selected track (passed to innerHTML)
 var playbackControl = document.querySelector('.playback-rate-control');
 var playBar; //set progress bar increment
 
- 
 //initialize the sound system
 function init(){
 audioCtx = new AudioContext(); //audio context
 source = audioCtx.createBufferSource();
 loadFile();
 }
-//initiate function init() immediately on page load
-//window.addEventListener('load',init,false);
 
 //now load and decode sound once sound system initialized
 function loadFile(){
@@ -119,25 +122,25 @@ function loadFile(){
 	
 	//decode loaded data
 	audioCtx.decodeAudioData(request.response, function(buffer){
-		buf = buffer;
-		duration = buffer.duration;
-		songLength.innerHTML = buffer.duration + " seconds";
+	buf = buffer;
+	duration = buffer.duration;
+	songLength.innerHTML = buffer.duration + " seconds";
 		
-		//add a progress bar
-		var div = document.getElementById('progressBar');
-		div.innerHTML = '<canvas id=\'progBar\' height=\'30px\' width=\'' + Math.floor(duration) + 'px\'>' + '</canvas>';	
-		progBar = document.getElementById('progBar');
-		progBar.style.border = 'solid black 2px';
-		ctx = progBar.getContext("2d");
-		//create source node from buffer
-		source.buffer = buf;
-        //attach buffer to your audio context
-		//source.connect(audioCtx.destination);
-		//allow change to playBack rate by setting value
-		source.playbackRate.value = playbackControl.value;
+	//add a progress bar
+	var div = document.getElementById('progressBar');
+	div.innerHTML = '<canvas id=\'progBar\' height=\'30px\' width=\'' + Math.floor(duration) + 'px\'>' + '</canvas>';	
+	progBar = document.getElementById('progBar');
+	progBar.style.border = 'solid black 2px';
+	ctx = progBar.getContext("2d");
+	
+	//create source node from buffer
+	source.buffer = buf;
+       
+	//allow change to playBack rate by setting value
+	source.playbackRate.value = playbackControl.value;
 		
-		});
-	};
+	});
+        };
 	request.send();
 }
 
@@ -145,23 +148,27 @@ function loadFile(){
 var counter = 0;
 
 function timer(){
+	//make the progress bar correspond to speed of playback
 	counter+=1*playbackControl.value;
 	ctx.fillStyle = "green";
-    ctx.fillRect(0, 0, counter, 100);
+        ctx.fillRect(0, 0, counter, 100);
 }
 
 //start track play button
 var play = document.getElementById('play');
 play.onclick = function(){
+
 //attach buffer to your audio context
 source.connect(audioCtx.destination);
 source.start(0);
 playBar = setInterval(timer,1000);
+
 }
 
 //stop track play button
 var stop = document.getElementById('stop');
 stop.onclick = function(){
+
 //reset audio context
 audioCtx = new AudioContext();
 
@@ -171,10 +178,13 @@ clearInterval(playBar);
 //reset progress bar
 ctx.clearRect(0,0, Math.floor(duration), 30);
 counter=0;
+
 }
 
 //allow playback rate to be altered 
 playbackControl.oninput = function() {
+  //allow the slidey thing to work only for the <audio> tag if no track has been imported
+  //most likely there will be no default <audio>, however...
   if(source !== undefined){
   source.playbackRate.value = playbackControl.value;
   };
@@ -201,6 +211,7 @@ return function(handle){ //'handle' here can be anything - called 'handle' for b
 
 function handleFile(files){
 var file = files[0];
+//the URL of the file will be passed to the XHR 
 fileURL = URL.createObjectURL(file);
 //process only audio files
 var imageType = /audio.*/;
