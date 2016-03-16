@@ -5,7 +5,6 @@
 //reference to modular pattern: http://weblogs.asp.net/dwahlin/techniques-strategies-and-patterns-for-structuring-javascript-code-revealing-module-pattern
 
 var img = new Image();
-//prompt user to select pic from disk
 var openFile = (function(){
 return function(c){
 	var fileInput = document.querySelector("#fileInput");
@@ -15,57 +14,46 @@ return function(c){
 	if(files && files.length>0) //if a file has been selected
 	   c(files)//do some function (defined by c) to that file
 	}
-	//bind the onFileChange function to fileInput. this triggers the next phase - getting the data from the picture file. 
-	//i think the 'change' event means just when you choose a file...
 	fileInput.addEventListener("change", onFileChange, false);
 	fileInput.click(); 
 }
 })();
 
-//once user picks a file, open that file (in a File object)
 //remember that this function will be passed an array containing the selected file(s)
 function handleFile(files){
 var file = files[0];
-//process only image files
-//regex is helpful here
 var imageType = /image.*/;
-//also remember that File objects have properties such as type, name, etc...
 if(!file.type.match(imageType)){
 	return;
 }
 
 var reader = new FileReader();
 
-//if reader is not working??
 reader.onerror = function(e){
 alert('Error code ' + e.target.error);
 }
 
 //Create a closure (notice modular pattern here) to capture file information
-//after the selected file is read, its contents are available and this function is executed
 reader.onload = (function(file){  
 	return function(evt){
 		//attach the name of the file onto the webpage
-		//document.getElementById('fileName').innerHTML = file.name;
 		//set the img src to the file
 		img.src = evt.target.result;
 	}
-})(file); //make sure file is passed to this function
+})(file); 
 
-//read in the file as a data url (why over here though?)
 reader.readAsDataURL(file);
 
 //send the pic to the canvas
 //note that the image has to load first! so do img.onload...
 img.onload = function(){
-context.drawImage(img, 0, 0, 600, 600); //figure out how to get canvas.height here to work..?
-//ah! reset the value for the HTML input file thing so that you can use the same pic for consecutive frames!  
+context.drawImage(img, 0, 0, 600, 600); 
+//reset the value for the HTML input file thing so that you can use the same pic for consecutive frames!  
 document.querySelector("#fileInput").value = null;
 }
 }
 
 //BEGIN FILTERS
-
 //general filtering function. pass any kind of filter through this function.
 //bind to onclick in html! 
 function filterCanvas(filter){
@@ -76,7 +64,7 @@ context.putImageData(imgData, 0, 0);
 
 //grayscale filter using an arithmetic average of the color components
 //the 'pixels' parameter will be the imgData variable. 
-function grayscale(pixels) {
+function grayscale(pixels){
 var d = pixels.data;
 for (var i = 0; i < d.length; i += 4) {
       var r = d[i];
@@ -137,7 +125,6 @@ function saturate(pixels){
 function swap(pixels){
 	var d = pixels.data;
 	for(var i=0;i<d.length;i+=4){
-		
 		var r = d[i];
 		var g = d[i+1];
 	    var b = d[i+2];
@@ -159,7 +146,6 @@ function banded(pixels){
 	d[i] = "#FFFFFF";
 	d[i+1] = "#FFFFFF";
 	d[i+2] = "#FFFFFF";
-		
 	}
 }
 
@@ -177,20 +163,25 @@ function something(pixels){
 	return pixels;
 }
 
-function something2(pixels){
+function purplizer(pixels){
+	//aka purplefier - all pixels with green=red or green>red become purple
 	var d = pixels.data;
-	
 		for(var i=0; i<d.length; i+=4){
-				
 				var r = d[i];
 				var g = d[i+1];
 				var b = d[i+2];
 				var a = d[i+3];
 		
+		        if(g >= r){
+					d[i+2] = d[i+2]*2;
+					d[i+1] = d[i+2]/2;
+				}
+		/*
 		for(j=0;j<5;j++){
 				d[i] = d[((j*(pixels.width*4)) + (j*4)) + 2];
 				d[i+1] = d[((j+2)*(pixels.width*4)) + ((j+1)*4)];
 		}
+		*/
 	}
 		
 	return pixels;
@@ -227,7 +218,21 @@ function scary(pixels){
 	return pixels;
 }
 
-
+function heatwave(pixels){
+	var d = pixels.data;
+	for(i=0;i<d.length;i++){
+		var r = d[i];
+		var g = d[i+1];
+		var b = d[i+2];
+		if(g > 100 && g < 200){
+			d[i+1] = 0;
+		}
+		if(r < 100){
+			d[i] = d[i]*2;
+		}
+	}
+	return pixels;
+}
 
 //RESET PICTURE
 function reset(){
