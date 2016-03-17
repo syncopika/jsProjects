@@ -266,9 +266,9 @@ return function(handle){
 
 	function onFileChange(e){
 	var files = e.target.files;
-	if(files && files.length>0){
+	if(files && files.length>0)
 	   handle(files)
-	}
+	}//end onFileChange
 	fileInput.addEventListener("change", onFileChange, false);
 	fileInput.click(); 
 }
