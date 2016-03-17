@@ -30,6 +30,9 @@ text-align:center;
 body{
 background-color: #DDDFFF;
 }
+input[type='range']{
+-webkit-appearance: slider-vertical;
+}
 </style>
 
 <body>
@@ -44,8 +47,7 @@ background-color: #DDDFFF;
 <p id='audioName'></p>
 
 <div id='control'>
-<p>some controls go here...</p>
-<p>**tip! 'import audio' will import your selected audio file to both the default audio player and to 'audio player 2'. The difference is that 'audio player 2' can manage more interesting manipulations of the audio. ***</p>
+<p><b>**tip! 'import audio' will import your selected audio file to both the default audio player and to 'audio player 2'. The difference is that 'audio player 2' can manage more interesting manipulations of the audio. ***</b></p>
 </div>
 </div>
 
@@ -64,9 +66,25 @@ background-color: #DDDFFF;
 <button class='btn' onclick='openFile(handleFile)'>import audio file</button>
 <input type='file' id='inputFile' style="display:none;">
 
-<p>Set playback rate</p>
+<hr>
+
+<div class='col-lg-2 col-lg-offset-3'>
+<p>set playback rate</p>
 <input class="playback-rate-control" type="range" min="0.25" max="3" step="0.05" value="1">
 <span id="playbackValue">1.0</span>
+</div>
+
+<div class='col-lg-2'>
+<p>distortion</p>
+<input class="distortion-control" type="range" min="0" max="20" step="2" value="0">
+<span id="distortionValue">0.0</span>
+</div>
+
+<div class='col-lg-2'>
+<p>change biquad filter</p>
+<input class="biquad-control" type="range" min="0" max="600" step="5" value="1">
+<span id='biquadValue'>0.0</span>
+</div>
 
 </div>
 
@@ -84,21 +102,37 @@ var audioName = document.getElementById("audioName");
 var songLength = document.getElementById("songLength");
 var myAudio = document.querySelector("audio"); //fetch the html audio element
 
-
-//variables for manipulating audio
-
 //player2 specific
 var progBar;
 var ctx;
+//
 
 var buf; //buffer
 var fileURL; //this is for holding a 'URL' of a selected file
 var source; //buffer source
 var audioCtx; //audio context
+var biquadFilter; //biquadFilter
+var distortion;//add distortion
 var duration; //duration of selected track (passed to innerHTML)
 var playbackControl = document.querySelector('.playback-rate-control');
+var biquadControl = document.querySelector('.biquad-control');
+var distortionControl = document.querySelector('.distortion-control');
+var distortionValue;
 var playBar; //set progress bar increment
 
+ function makeDistortionCurve(amount){
+			var k = amount,//typeof amount === 'number' ? amount : 50,
+			n_samples = 44100,
+			curve = new Float32Array(n_samples),
+			deg = Math.PI / 180,
+			i = 0,
+			x;
+			for ( i; i < n_samples; ++i ) {
+				x = i * 2 / n_samples - 1;
+				curve[i] = ( 3 + k ) * x * 10 * deg / ( Math.PI + k * Math.abs(x));
+			}
+		return curve;	
+		};
  
 //initialize the sound system
 function init(){
@@ -129,12 +163,25 @@ function loadFile(){
 		progBar = document.getElementById('progBar');
 		progBar.style.border = 'solid black 2px';
 		ctx = progBar.getContext("2d");
+		
 		//create source node from buffer
 		source.buffer = buf;
-        //attach buffer to your audio context
-		//source.connect(audioCtx.destination);
+
 		//allow change to playBack rate by setting value
-		source.playbackRate.value = playbackControl.value;
+		source.playbackRate.value = playbackControl.value;	
+		
+		// Manipulate the Biquad filter
+		biquadFilter = audioCtx.createBiquadFilter();
+		biquadFilter.type = "lowpass";
+		biquadFilter.frequency.value = biquadControl.value;
+		biquadFilter.gain.value = 5;
+		//biquadFilter.Q.value = biquadControl.value;
+        
+		//add distortion
+		distortion = audioCtx.createWaveShaper();
+		//distortionValue = distortionControl.value;
+		//distortion.curve = makeDistortionCurve(distortionValue);
+		
 		
 		});
 	};
@@ -150,14 +197,25 @@ function timer(){
     ctx.fillRect(0, 0, counter, 100);
 }
 
+
 //start track play button
 var play = document.getElementById('play');
 play.onclick = function(){
+//hook up biquad filter
+biquadFilter.connect(audioCtx.destination);
+source.connect(biquadFilter);
+
+//hook up distortion-maker
+distortion.connect(audioCtx.destination);
+source.connect(distortion);
+
 //attach buffer to your audio context
 source.connect(audioCtx.destination);
 source.start(0);
 playBar = setInterval(timer,1000);
+
 }
+
 
 //stop track play button
 var stop = document.getElementById('stop');
@@ -171,15 +229,35 @@ counter=0;
 init();
 }
 
+
 //allow playback rate to be altered 
 playbackControl.oninput = function() {
   if(source !== undefined){
   source.playbackRate.value = playbackControl.value;
   };
+  //for the regular audio element
   audioFile.playbackRate = playbackControl.value;
+  //change playback value on page
   document.getElementById('playbackValue').innerHTML = playbackControl.value;
 }
 
+//alter biquad filter frequency
+biquadControl.oninput = function(){
+	if(source !== undefined){
+	biquadFilter.frequency.value = biquadControl.value;
+	}
+	//change biquad value on page
+   document.getElementById('biquadValue').innerHTML = biquadControl.value;
+}
+
+//control distortion
+distortionControl.oninput = function(){
+	if(source !== undefined){
+	distortionValue = distortionControl.value;
+	distortion.curve = makeDistortionCurve(distortionValue);
+	}
+   document.getElementById('distortionValue').innerHTML = distortionControl.value;
+}
 
 //IMPORTING AUDIO CODE HERE //
 var openFile = (function(){
@@ -188,8 +266,8 @@ return function(handle){
 
 	function onFileChange(e){
 	var files = e.target.files;
-	if(files && files.length>0) //if a file has been selected
-	   handle(files)//do some function to that file
+	if(files && files.length>0){
+	   handle(files)
 	}
 	fileInput.addEventListener("change", onFileChange, false);
 	fileInput.click(); 
@@ -221,9 +299,9 @@ reader.onload = (function(file){
 	}
 })(file); //make sure file is passed to this function
 
-//read in the file as a data url (why over here though?)
 reader.readAsDataURL(file);
 audioFile.value = null;
+
 //EXECUTE init() here!
 init();
 }
