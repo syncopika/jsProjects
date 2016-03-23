@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>experiment</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+</head>
+
+<style>
+canvas{
+display: block;
+margin:0 auto;
+margin-top: 2%;
+}
+h1{
+text-align:center;
+}
+#console{
+text-align:center;
+margin:0 auto;
+width: 30%;
+height: auto;
+border: 2px black solid;
+margin-bottom: 10%;
+}
+p{
+text-align: center;
+}
+</style>
+
+<body>
+<h1>canvas experiment</h1>
+<p>space bar to click, arrow keys to move. :) </p>
+<div id='theCanvas'>
+<canvas id='canvas' height='600' width='600' style='border: 1px black solid'></canvas>
+<h2 id='log' style='text-align:center'></h2>
+</div>
+<div id='console'><h3>where am I?</h3>
+<p id='xCoord'></p>
+<p id='yCoord'></p>
+<p id='objColor'></p>
+</div>
+
+<script>
+/******************************************
+turn on cmd line
+in cmd line => Go to the website practice folder
+then type this => 'python -m http.server'
+go to localhost:8000
+click on this file 
+
+TO DO:
+activate the first house - i.e. if 170 < y < 108 and spacebar click => overlay a new canvas with a new context
+this new canvas will be like the inside of the house
+
+*******************************************/
+
+//coordinates of character and other variables
+var x;  
+var y;
+var objectPresent = false;
+var objectColor;
+var context = document.getElementById('canvas').getContext("2d");
+
+//log current coordinates
+function logCoordinates(){
+var xCoord = document.getElementById('xCoord');
+var yCoord = document.getElementById('yCoord');
+var objColor = document.getElementById('objColor');
+xCoord.textContent = "X coordinate: " + x;
+yCoord.textContent = "Y coordinate: " + y;
+objColor.textContent = "object color is " + objectColor;
+}
+
+//draw background
+function drawBackground(){
+var background = new Image();
+background.src = "bgTest.png";
+background.onload = function(){
+context.drawImage(background, 0, 0);
+}
+}
+
+//change pic of character appropriately depending on movement
+//to alternate pics for movement (i.e. right1 and right2) - set up a counter for each direction??
+var rightM = 1;
+var leftM = 1;
+var upM = 1;
+var downM = 1;
+
+function drawCharacterRight(){
+var character = new Image();
+if(rightM%2 !== 0){
+character.src = "sprites1/spriteRight1.png";
+}else{
+character.src = "sprites1/spriteRight2.png";
+}
+rightM++;
+character.onload = function(){
+context.drawImage(character, x, y);
+}
+}
+
+function drawCharacterLeft(){
+var character = new Image();
+if(leftM%2 !== 0){
+character.src = "sprites1/spriteLeft1.png";
+}else{
+character.src = "sprites1/spriteLeft2.png";
+}
+leftM++;
+character.onload = function(){
+context.drawImage(character, x, y);
+}
+}
+
+function drawCharacterUp(){
+var character = new Image();
+if(upM%2 !== 0){
+character.src = "sprites1/spriteUp1.png";
+}else{
+character.src = "sprites1/spriteUp2.png";
+}
+upM++;
+character.onload = function(){
+context.drawImage(character, x, y);
+}
+}
+
+function drawCharacterDown(){
+var character = new Image();
+if(downM%2 !== 0){
+character.src = "sprites1/spriteDown1.png";
+}else{
+character.src = "sprites1/spriteDown2.png";
+}
+downM++;
+character.onload = function(){
+context.drawImage(character, x, y);
+}
+}
+
+//movement
+
+function left(){
+objectPresent = false;
+drawBackground();
+x-=2;
+drawCharacterLeft();
+}
+
+function right(){
+objectPresent = false;
+drawBackground();
+x+=2;
+drawCharacterRight();
+}
+
+function up(){
+objectPresent = false;
+drawBackground();
+y-=2;
+drawCharacterUp();
+}
+
+function down(){
+objectPresent = false;
+drawBackground();
+y+=2;
+drawCharacterDown();
+}
+
+
+function checkRight(){
+var obstacleColorData = context.getImageData(x+22, y, 1, 20).data;
+var obstacleColor = 'rgb(' + obstacleColorData[0] + ',' + obstacleColorData[1] + ',' + obstacleColorData[2] + ')';
+var check = true;
+for(i=0;i<obstacleColorData.length;i+=4){
+	if(!(obstacleColorData[i+2] <= 10) || obstacleColorData[i] === 0){
+	check = false;
+	objectPresent = true;
+	objectColor = obstacleColorData[i];
+	}
+}
+if(x+22 === 600){
+check = false;
+}
+return check;
+}
+
+function checkLeft(){
+var obstacleColorData = context.getImageData(x-2, y, 1, 20).data;
+var obstacleColor = 'rgb(' + obstacleColorData[0] + ',' + obstacleColorData[1] + ',' + obstacleColorData[2] + ')';
+var check = true;
+for(i=0;i<obstacleColorData.length;i+=4){
+	if(!(obstacleColorData[i+2] <= 10) || obstacleColorData[i] === 0){
+	check = false;
+	objectPresent = true;
+	objectColor = obstacleColorData[i];
+	}
+}
+if(x-2 === 0){
+check = false;
+}
+return check;
+}
+
+function checkUp(){
+var obstacleColorData = context.getImageData(x, y-2, 20, 1).data;
+var obstacleColor = 'rgb(' + obstacleColorData[0] + ',' + obstacleColorData[1] + ',' + obstacleColorData[2] + ')';
+var check = true;
+for(i=0;i<obstacleColorData.length;i+=4){
+	if(!(obstacleColorData[i+2] <= 10) || obstacleColorData[i] === 0){
+	check = false;
+	objectPresent = true;
+	objectColor = obstacleColorData[i];
+	}
+}
+if(y-2 === 0){
+check = false;
+}
+return check;
+}
+
+function checkDown(){
+var obstacleColorData = context.getImageData(x, y+22, 20, 1).data;
+var obstacleColor = 'rgb(' + obstacleColorData[0] + ',' + obstacleColorData[1] + ',' + obstacleColorData[2] + ')';
+var check = true;
+for(i=0;i<obstacleColorData.length;i+=4){
+	if(!(obstacleColorData[i+2] <= 10) || obstacleColorData[i] === 0){
+	check = false;
+	objectPresent = true;
+	objectColor = obstacleColorData[i];
+	}
+}
+if(y+22 === 600){
+check = false;
+}
+return check;
+}
+
+
+function cleanCanvas(){
+//paint canvas white
+context.rect(0,0,600,600);
+context.fillStyle = 'rgb(255,255,255)';
+context.fill();
+}
+
+//draw an obstacle
+function drawObstacle(){
+context.strokeRect(100,100,100,100);
+}
+
+function drawObstacle2(){
+var imgData = context.getImageData(350, 350, 100, 200);
+var someObstacle = imgData.data;
+for(i=0;i<someObstacle.length;i+=4){
+ someObstacle[i] = 120;
+ someObstacle[i+1] = 120;
+ someObstacle[i+2] = 120;
+}
+context.putImageData(imgData, 350, 350);
+//return imgData;
+}
+
+var object = function(){
+x = 20;  
+y = 120;
+//drawCharacter();
+
+$(document).keydown(function(e){
+switch(e.which){
+    case 37: //left arrow key
+	if(checkLeft()){
+	left();
+	logCoordinates();
+	}
+	break;
+	case 39: //right arrow key
+	if(checkRight()){
+	right();
+	logCoordinates();
+	}
+	break;
+	case 40: //down
+	if(checkDown()){
+	down();
+	logCoordinates();
+	}
+	break;
+	case 38: //up
+	if(checkUp()){
+	up();
+	logCoordinates();
+	}
+	break;
+	case 32: //spacebar
+	if(objectPresent){
+	var log = document.getElementById('log');     
+		if(objectColor === 120){
+		log.textContent = "Brian's house.";
+		}
+		else if(122 <= objectColor && objectColor <= 127){
+		log.textContent = "Nick's house.";
+		}
+		else{
+		log.textContent = "hey, you clicked on me!!!";
+		}
+	}
+	break;
+	default:
+	return;
+	}
+	e.preventDefault();
+});
+}
+
+function drawPath(){
+//draw a path
+context.beginPath();
+context.moveTo(200,200);
+context.lineTo(300,450);
+context.strokeStyle = 'black';
+context.lineWidth = 5;
+context.stroke(); 
+}
+
+$(document).ready(function(){
+cleanCanvas();
+drawBackground();
+drawCharacterRight();
+object();
+logCoordinates();
+});
+</script>
+
+
+</body>
+
+</html>
