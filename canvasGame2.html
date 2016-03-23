@@ -81,6 +81,33 @@ background.src = "bgTest.png";
 background.onload = function(){
 context.drawImage(background, 0, 0);
 }
+newNPC();
+}
+
+//draw NPC
+function newNPC(){
+var NPC1 = new Image();
+NPC1.src = "sprites1/spriteRight1.png";
+NPC1.onload = function(){
+context.drawImage(NPC1, 300, 126);
+}
+}
+
+//let's record the NPC's coordinates so that we can ID the NPC on click
+var npcLocation = {'x' : 300, 'y': 126};
+//also let's do our character's location too
+var yourLocation = {'x': x, 'y': y};
+function updateLocation(){
+yourLocation['x'] = x;
+yourLocation['y'] = y;
+}
+
+function checkNPC(){
+if(objectPresent){
+	if(yourLocation['x'] + 18 === npcLocation['x']){
+	return true;
+	}
+}
 }
 
 //change pic of character appropriately depending on movement
@@ -143,7 +170,6 @@ context.drawImage(character, x, y);
 }
 
 //movement
-
 function left(){
 objectPresent = false;
 drawBackground();
@@ -178,6 +204,7 @@ var obstacleColorData = context.getImageData(x+22, y, 1, 20).data;
 var obstacleColor = 'rgb(' + obstacleColorData[0] + ',' + obstacleColorData[1] + ',' + obstacleColorData[2] + ')';
 var check = true;
 for(i=0;i<obstacleColorData.length;i+=4){
+     //if blue or black
 	if(!(obstacleColorData[i+2] <= 10) || obstacleColorData[i] === 0){
 	check = false;
 	objectPresent = true;
@@ -271,44 +298,57 @@ x = 20;
 y = 120;
 //drawCharacter();
 
-$(document).keydown(function(e){
-switch(e.which){
-    case 37: //left arrow key
-	if(checkLeft()){
-	left();
-	logCoordinates();
-	}
-	break;
-	case 39: //right arrow key
-	if(checkRight()){
-	right();
-	logCoordinates();
-	}
-	break;
-	case 40: //down
-	if(checkDown()){
-	down();
-	logCoordinates();
-	}
-	break;
-	case 38: //up
-	if(checkUp()){
-	up();
-	logCoordinates();
-	}
-	break;
-	case 32: //spacebar
-	if(objectPresent){
-	var log = document.getElementById('log');     
+//different actions depending on the object
+function doAction(){
+ var log = document.getElementById('log');     
 		if(objectColor === 120){
 		log.textContent = "Brian's house.";
 		}
 		else if(122 <= objectColor && objectColor <= 127){
 		log.textContent = "Nick's house.";
 		}
+		else if(checkNPC()){
+		log.textContent = "Hi, I'm Nick.";
+		}
 		else{
 		log.textContent = "hey, you clicked on me!!!";
 		}
+}
+
+
+$(document).keydown(function(e){
+switch(e.which){
+    case 37: //left arrow key
+	if(checkLeft()){
+	left();
+	logCoordinates();
+	updateLocation();
+	}
+	break;
+	case 39: //right arrow key
+	if(checkRight()){
+	right();
+	logCoordinates();
+	updateLocation();
+	}
+	break;
+	case 40: //down
+	if(checkDown()){
+	down();
+	logCoordinates();
+	updateLocation();
+	}
+	break;
+	case 38: //up
+	if(checkUp()){
+	up();
+	logCoordinates();
+	updateLocation();
+	}
+	break;
+	case 32: //spacebar
+	if(objectPresent){
+	   doAction();
 	}
 	break;
 	default:
@@ -331,6 +371,7 @@ context.stroke();
 $(document).ready(function(){
 cleanCanvas();
 drawBackground();
+newNPC();
 drawCharacterRight();
 object();
 logCoordinates();
