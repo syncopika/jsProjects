@@ -84,9 +84,9 @@ context.drawImage(background, 0, 0);
 newNPC();
 }
 
+var NPC1 = new Image();
 //draw NPC
 function newNPC(){
-var NPC1 = new Image();
 NPC1.src = "sprites1/spriteRight1.png";
 NPC1.onload = function(){
 context.drawImage(NPC1, 300, 126);
@@ -97,6 +97,7 @@ context.drawImage(NPC1, 300, 126);
 var npcLocation = {'x' : 300, 'y': 126};
 //also let's do our character's location too
 var yourLocation = {'x': x, 'y': y};
+//update your location
 function updateLocation(){
 yourLocation['x'] = x;
 yourLocation['y'] = y;
@@ -307,7 +308,18 @@ function doAction(){
 		else if(122 <= objectColor && objectColor <= 127){
 		log.textContent = "Nick's house.";
 		}
+		else if(objectColor === 74){
+		log.textContent = "...what a wonderful blue lawn...";
+		}
 		else if(checkNPC()){
+		/////
+		drawBackground();
+		drawCharacterRight();
+		//this makes the NPC turn around to face you (only if you're facing from the left though)
+		NPC1.src = "sprites1/spriteLeft1.png";
+		NPC1.onload = function(){
+		context.drawImage(NPC1, 300, 126);
+		}
 		log.textContent = "Hi, I'm Nick.";
 		}
 		else{
