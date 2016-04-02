@@ -60,8 +60,6 @@ I can easily identify which NPC is in front of my character, so that I can have 
 
 can I have the NPCs idle walk?
 
-add parameters for Image.prototype.show() so that I can specify where I want to put the NPC. i.e. don't hard-code location. 
-
 *******************************************/
 
 //coordinates of character and other variables
@@ -89,7 +87,7 @@ background.onload = function(){
 context.drawImage(background, 0, 0);
 }
 newNPC();
-NPC2.show();
+NPC2.show(100, 126);
 }
 
 /*****************************
@@ -99,16 +97,22 @@ MAKE AN NPC CONSTRUCTOR
 //extend image constructor
 Image.prototype.talk = function(){log.textContent = "blarghhh."};
 
-Image.prototype.show = function(){
+//all NPCs should have location data logged
+Image.prototype.xLoc;
+Image.prototype.yLoc;
+
+Image.prototype.show = function(x, y){
+this.xLoc = x;
+this.yLoc = y;
 this.src = "sprites1/spriteRight1.png";
 this.onload = function(){
-context.drawImage(this, 100, 126);
+context.drawImage(this, x, y);
 }
+}
+
 
 Image.prototype.getLocation = function(){
-
 }
-};
 
 var NPC2 = new Image();
 
@@ -413,7 +417,7 @@ $(document).ready(function(){
 cleanCanvas();
 drawBackground();
 newNPC();
-NPC2.show();
+NPC2.show(100,126);
 drawCharacterRight();
 object();
 logCoordinates();
