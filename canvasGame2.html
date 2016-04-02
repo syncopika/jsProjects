@@ -52,8 +52,13 @@ go to localhost:8000
 click on this file 
 
 TO DO:
-activate the first house - i.e. if 170 < y < 108 and spacebar click => overlay a new canvas with a new context
+activate the first house - i.e. if 170 < y < 108 and spacebar click => overlay a new canvas with a new context? or wipe out everything?
 this new canvas will be like the inside of the house
+
+now that I've successfully extended the Image constructor and added methods that make it act like a 'person', is there any way 
+I can easily identify which NPC is in front of my character, so that I can have unique NPCs?
+
+can I have the NPCs idle walk?
 
 *******************************************/
 
@@ -82,7 +87,28 @@ background.onload = function(){
 context.drawImage(background, 0, 0);
 }
 newNPC();
+NPC2.show();
 }
+
+/*****************************
+MAKE AN NPC CONSTRUCTOR
+*//////////////////////////
+
+//extend image constructor
+Image.prototype.talk = function(){log.textContent = "blarghhh."};
+
+Image.prototype.show = function(){
+this.src = "sprites1/spriteRight1.png";
+this.onload = function(){
+context.drawImage(this, 100, 126);
+}
+
+Image.prototype.getLocation = function(){
+
+}
+};
+
+var NPC2 = new Image();
 
 var NPC1 = new Image();
 //draw NPC
@@ -321,6 +347,7 @@ function doAction(){
 		context.drawImage(NPC1, 300, 126);
 		}
 		log.textContent = "Hi, I'm Nick.";
+		//NPC1.talk();
 		}
 		else{
 		log.textContent = "hey, you clicked on me!!!";
@@ -384,6 +411,7 @@ $(document).ready(function(){
 cleanCanvas();
 drawBackground();
 newNPC();
+NPC2.show();
 drawCharacterRight();
 object();
 logCoordinates();
