@@ -255,15 +255,6 @@ function redraw(){
 
 context.lineJoin = 'round';
 
-//new kind of brush
-/*
-function weirdBrush(){
-var random = Math.random()*(15-1) + 1;
-context.moveTo(clickX[i-1]*random, clickY[i-1]);
-context.lineTo(clickX[i]*random, clickY[i]/random);
-}
-*/
-
 for(var i = 0; i < clickX.length; i++){
   context.beginPath();
   //this helps prevent dragging!!! 
