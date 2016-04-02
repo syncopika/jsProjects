@@ -255,10 +255,21 @@ function redraw(){
 
 context.lineJoin = 'round';
 
+//new kind of brush
+/*
+function weirdBrush(){
+var random = Math.random()*(15-1) + 1;
+context.moveTo(clickX[i-1]*random, clickY[i-1]);
+context.lineTo(clickX[i]*random, clickY[i]/random);
+}
+*/
+
 for(var i = 0; i < clickX.length; i++){
   context.beginPath();
+  //this helps prevent dragging!!! 
   if(clickDrag[i] && i){ //this is the default condition??
   context.moveTo(clickX[i-1], clickY[i-1]);//this might explain buggy crazy brush when copying a canvas. try changing the -1. 
+  //context.lineTo(clickX[i], clickY[i]);
   }
   else{
 	if(lbrush === 1){
@@ -267,10 +278,12 @@ for(var i = 0; i < clickX.length; i++){
 	}
 	else if(cbrush === 1){
 	lbrush = 0;
-	context.moveTo(clickX[i-2], clickY[i-1]+10);
+	context.moveTo(clickX[i-2], clickY[i-1]+15);
+	context.lineTo(clickX[i], clickY[i]);
 	}
 	else{
 	context.moveTo(clickX[i], clickY[i]+1);
+	//context.lineTo(clickX[i], clickY[i]);
 	}
   }
   context.lineTo(clickX[i], clickY[i]);
@@ -282,24 +295,23 @@ for(var i = 0; i < clickX.length; i++){
 };
 
 
-//define draw 
-function draw(){
-var paint;
-var rect = theCanvas.getBoundingClientRect();
-
 function addClick(x, y, dragging){
 clickX.push(x);
 clickY.push(y);
 clickDrag.push(dragging);
 clickColor.push(curColor);
 clickSize.push(curSize);
-
 curClickX.push(x);
 curClickY.push(y);
 curClickDrag.push(dragging);
 curClickColor.push(curColor);
 curClickSize.push(curSize);
 }
+
+//define draw 
+function draw(){
+var paint;
+var rect = theCanvas.getBoundingClientRect();
 
 //#picture is the container of the canvas, so I used #picture to get the top and left coordinates
 var offsetTop = $('#picture').position()["top"];  
@@ -318,11 +330,11 @@ redraw();
 $('#' + curCanvas).mousemove(function(e) {
   if (paint){
      if(cbrush === 1 || lbrush === 1){
-	 addClick(e.pageX - offsetLeft - 25, e.pageY - offsetTop);
+	 addClick(e.pageX - offsetLeft - 25, e.pageY - offsetTop, false);
 	 }
 	 else{
 	 //set dragging to 1 = solid lines when moving the mouse. 
-	 addClick(e.pageX - offsetLeft - 25, e.pageY - offsetTop, 1);
+	 addClick(e.pageX - offsetLeft - 25, e.pageY - offsetTop, true);
 	 }
 	 redraw();
 }
@@ -344,6 +356,8 @@ paint = false;
 $('#clear').click(function(){
 context = document.getElementById(curCanvas).getContext("2d");
 context.clearRect(0, 0, theCanvas.width, theCanvas.height);
+context.fillStyle = "#FFFFFF";
+context.fillRect(0,0,600,600);
 clearClick();
 clearCurClick();
 //reset saved pixel data
@@ -577,7 +591,6 @@ function stop(){
 clearInterval(play);
 }
 
-//dunno what I was thinking for this...I think I wanted to try to replicate a sky background...
 $('#colorBg').click(function(){
 for(i = 0;i < 255; i++){ //if i < 600, then half the canvas will be white.
 context.fillStyle = 'rgb(' + (i-50) + ',' + (i-20) + ',' + (i-10) + ')';
