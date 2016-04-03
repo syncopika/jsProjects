@@ -45,8 +45,8 @@ margin-bottom: 12%;
 
 <div id='player1'>
 <p> regular HTML5 audio player here </p>
-<audio id='demo' src='C:\Documents and Settings\HUNG\Desktop\route 205.mp3' controls preload='auto'></audio>
-<!-- C:\Documents and Settings\HUNG\Desktop\あすいろ恋模様 full SB69クリティクリスタ.mp3-->
+<audio id='demo' src='http://opengameart.org/sites/default/files/080415pianobgm3popver_0.ogg' controls preload='auto'></audio>
+
 <p>name of audio file: </p>
 <p id='audioName'></p>
 
@@ -72,32 +72,32 @@ margin-bottom: 12%;
 
 <hr>
 
-<div class='col-lg-2 col-lg-offset-1'>
+<div class='col-lg-2 col-lg-offset-1 col-sm-2 col-sm-offset-1'>
 <p>set playback rate</p>
 <input class="playback-rate-control" type="range" min="0.25" max="3" step="0.05" value="1">
 <span id="playbackValue">1.0</span>
 </div>
 
-<div class='col-lg-2'>
+<div class='col-lg-2  col-sm-2'>
 <p>distortion</p>
 <input class="distortion-control" type="range" min="0" max="10" step=".2" value="0">
 <span id="distortionValue">0.0</span>
 </div>
 
-<div class='col-lg-2'>
+<div class='col-lg-2  col-sm-2'>
 <p>change biquad filter Q value</p>
 <input class="biquad-control-q" type="range" min="0" max="40" step="2" value="0">
 <span id='biquadValueQ'>0.0</span>
 </div>
 
-<div class='col-lg-2'>
+<div class='col-lg-2  col-sm-2'>
 <p>change biquad filter frequency value</p>
 <input class="biquad-control-fq" type="range" min="0" max="6000" step="500" value="0">
 <span id='biquadValueFq'>0.0</span>
 </div>
 
 
-<div class='col-lg-2'>
+<div class='col-lg-2  col-sm-2'>
 <p>apply karaoke feature (apply before playing file)</p>
 <button class='btn' onclick='playKaraoke()'>karaoke!</button>
 <p>turn off karaoke feature (must re-import audio file)</p>
