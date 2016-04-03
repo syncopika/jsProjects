@@ -45,7 +45,8 @@ margin-bottom: 12%;
 
 <div id='player1'>
 <p> regular HTML5 audio player here </p>
-<audio id='demo' src='http://opengameart.org/sites/default/files/080415pianobgm3popver_0.ogg' controls preload='auto'></audio>
+<audio id='demo' src='C:\Documents and Settings\HUNG\Desktop\route 205.mp3' controls preload='auto'></audio>
+<!-- C:\Documents and Settings\HUNG\Desktop\あすいろ恋模様 full SB69クリティクリスタ.mp3-->
 <p>name of audio file: </p>
 <p id='audioName'></p>
 
@@ -71,7 +72,7 @@ margin-bottom: 12%;
 
 <hr>
 
-<div class='col-lg-2 col-lg-offset-2'>
+<div class='col-lg-2 col-lg-offset-1'>
 <p>set playback rate</p>
 <input class="playback-rate-control" type="range" min="0.25" max="3" step="0.05" value="1">
 <span id="playbackValue">1.0</span>
@@ -84,10 +85,17 @@ margin-bottom: 12%;
 </div>
 
 <div class='col-lg-2'>
-<p>change biquad filter</p>
-<input class="biquad-control" type="range" min="0" max="20" step=".1" value="0">
-<span id='biquadValue'>0.0</span>
+<p>change biquad filter Q value</p>
+<input class="biquad-control-q" type="range" min="0" max="40" step="2" value="0">
+<span id='biquadValueQ'>0.0</span>
 </div>
+
+<div class='col-lg-2'>
+<p>change biquad filter frequency value</p>
+<input class="biquad-control-fq" type="range" min="0" max="6000" step="500" value="0">
+<span id='biquadValueFq'>0.0</span>
+</div>
+
 
 <div class='col-lg-2'>
 <p>apply karaoke feature (apply before playing file)</p>
@@ -131,7 +139,8 @@ var audioToKaraoke; //buffer for karaoke feature
 var karaoke = false;
 var duration; //duration of selected track (passed to innerHTML)
 var playbackControl = document.querySelector('.playback-rate-control');
-var biquadControl = document.querySelector('.biquad-control');
+var biquadControlQ = document.querySelector('.biquad-control-q');
+var biquadControlFq = document.querySelector('.biquad-control-fq');
 var distortionControl = document.querySelector('.distortion-control');
 var distortionValue;
 var playBar; //set progress bar increment
@@ -157,10 +166,8 @@ audioCtx = new AudioContext();
 source = audioCtx.createBufferSource();
 loadFile();
 }
-//initiate function init() immediately on page load
-//window.addEventListener('load',init,false);
 
-//now load and decode sound once sound system initialized
+//now load and decode sound once sound system initialized (and after user has selected a sound file!)
 function loadFile(){
 	var request = new XMLHttpRequest();
 	request.open("GET", fileURL, true);
@@ -210,8 +217,8 @@ function loadFile(){
 		
 		// set up the Biquad filter
 		biquadFilter = audioCtx.createBiquadFilter();
-		biquadFilter.type = "notch";
-		biquadFilter.frequency.value = 1000;//biquadControl.value;
+		biquadFilter.type = "lowpass";
+		biquadFilter.frequency.value = 0;//biquadControlFq.value;
 		//biquadFilter.gain.value = 20;
 		biquadFilter.Q.value = 0;
         
@@ -273,7 +280,6 @@ playBar = setInterval(timer,1000);
 }
 }
 
-
 //stop track play button
 var stop = document.getElementById('stop');
 stop.onclick = function(){
@@ -301,13 +307,22 @@ playbackControl.oninput = function() {
   document.getElementById('playbackValue').innerHTML = playbackControl.value;
 }
 
-//alter biquad filter frequency
-biquadControl.oninput = function(){
+//alter biquad filter Q value
+biquadControlQ.oninput = function(){
 	if(source !== undefined){
-	biquadFilter.Q.value = biquadControl.value;
+	biquadFilter.Q.value = biquadControlQ.value;
 	}
 	//change biquad value on page
-   document.getElementById('biquadValue').innerHTML = biquadControl.value;
+   document.getElementById('biquadValueQ').innerHTML = biquadControlQ.value;
+}
+
+//alter biquad filter Q value
+biquadControlFq.oninput = function(){
+	if(source !== undefined){
+	biquadFilter.frequency.value = biquadControlFq.value;
+	}
+	//change biquad value on page
+   document.getElementById('biquadValueFq').innerHTML = biquadControlFq.value;
 }
 
 //control distortion
@@ -349,7 +364,6 @@ reader.onerror = function(e){
 alert('Error code ' + e.target.error);
 }
 
-//Create a closure (notice modular pattern here) to capture file information
 //after the selected file is read, its contents are available and this function is executed
 reader.onload = (function(file){  
 	return function(evt){
