@@ -45,13 +45,12 @@ margin-bottom: 12%;
 
 <div id='player1'>
 <p> regular HTML5 audio player here </p>
-<audio id='demo' src='http://opengameart.org/sites/default/files/080415pianobgm3popver_0.ogg' controls preload='auto'></audio>
-
+<audio id='demo' src='route 205.mp3' controls preload='auto'></audio>
 <p>name of audio file: </p>
 <p id='audioName'></p>
 
 <div id='control'>
-<p><b>**tip! 'import audio' will import your selected audio file to both the default audio player and to 'audio player 2'. The difference is that 'audio player 2' can manage more interesting manipulations of the audio. ***</b></p>
+<p><b>**tip! 'import audio' will import your selected audio file to both the default audio player and to 'audio player 2'. ***</b></p>
 </div>
 </div>
 
@@ -120,7 +119,6 @@ audioFile.playbackRate = 1;
 
 var audioName = document.getElementById("audioName");
 var songLength = document.getElementById("songLength");
-var myAudio = document.querySelector("audio"); //fetch the html audio element
 
 
 //variables for manipulating audio
@@ -132,7 +130,8 @@ var ctx;
 var buf; //buffer
 var fileURL; //this is for holding a 'URL' of a selected file
 var source; //buffer source
-var audioCtx; //audio context
+var source2; //the audio element can take some manipulation too!
+var audioCtx = new AudioContext(); //audio context
 var biquadFilter; //biquadFilter
 var distortion;//add distortion
 var audioToKaraoke; //buffer for karaoke feature
@@ -145,14 +144,33 @@ var distortionControl = document.querySelector('.distortion-control');
 var distortionValue;
 var playBar; //set progress bar increment
 
- function makeDistortionCurve(amount){
-			var k = amount,//typeof amount === 'number' ? amount : 50,
+
+// The below is for testing out modification of streaming from the html audio element.
+// unfortunately, it seems that playback will function just like with the Web Audio API, in which you can't just scroll
+// to wherever part you want in the music, which makes sense though since the audio data has to be modified sequentially (I think?).
+// the below will only work in a local host setting, due to CORS.
+
+window.addEventListener('load', function(e){
+		//source2 = audioCtx.createMediaElementSource(audioFile); UNCOMMENT THIS TO ACTIVATE (only in local host setting!)
+		biquadFilter = audioCtx.createBiquadFilter();
+		biquadFilter.type = "lowpass";
+		biquadFilter.frequency.value = 0;//biquadControlFq.value;
+		//biquadFilter.gain.value = 20;
+		biquadFilter.Q.value = 0;
+		biquadFilter.connect(audioCtx.destination);
+		source2.connect(biquadFilter);
+		source2.connect(audioCtx.destination);
+},false);
+
+// END TEST
+
+function makeDistortionCurve(amount){
+			var k = amount, //typeof amount === 'number' ? amount : 50,
 			n_samples = 44100,
 			curve = new Float32Array(n_samples),
-			deg = Math.PI / 180,
-			i = 0,
+			deg = Math.PI / 70, //change the degrees and hear what happens
 			x;
-			for ( i; i < n_samples; ++i ) {
+			for (i=0; i < n_samples; i++ ) {
 				x = i * 2 / n_samples - 1;
 				curve[i] = ( 3 + k ) * x * 10 * deg / ( Math.PI + k * Math.abs(x));
 			}
@@ -161,8 +179,8 @@ var playBar; //set progress bar increment
  
 //initialize the sound system
 function init(){
- //set audio context
-audioCtx = new AudioContext();
+//set audio context
+//audioCtx = new AudioContext();
 source = audioCtx.createBufferSource();
 loadFile();
 }
@@ -172,9 +190,7 @@ function loadFile(){
 	var request = new XMLHttpRequest();
 	request.open("GET", fileURL, true);
 	request.responseType = 'arraybuffer';
-	
 	request.onload = function(){
-	
 	//decode loaded data
 	audioCtx.decodeAudioData(request.response, function(buffer){
 		//console.log(buffer);
@@ -185,7 +201,6 @@ function loadFile(){
 		
 		//create source node from buffer
 		//source.buffer = buf;
-		
 		//'karaoke' feature (thanks to http://audiograins.com/resources/webaudioapistuff.js)
 		var numChannels = buffer.numberOfChannels;
 		
@@ -203,7 +218,6 @@ function loadFile(){
 		audioToKaraoke = audioCtx.createBuffer(1, buffer.length, buffer.sampleRate); //audioToKaraoke is a buffer that holds the karaoke audio data
 		audioToKaraoke.getChannelData(0).set(audioData);
 		}
-		
 		
 		//add a progress bar
 		var div = document.getElementById('progressBar');
@@ -226,7 +240,6 @@ function loadFile(){
 		distortion = audioCtx.createWaveShaper();
 		//distortionValue = distortionControl.value;
 		//distortion.curve = makeDistortionCurve(distortionValue);
-		
 		
 		});
 	};
@@ -270,9 +283,8 @@ source.connect(audioCtx.destination);
 source.start(0);
 playBar = setInterval(timer,1000);
 }else{
-
+//just play as normal
 source.buffer = buf;
-
 //attach buffer to your audio context
 source.connect(audioCtx.destination);
 source.start(0);
@@ -285,7 +297,6 @@ var stop = document.getElementById('stop');
 stop.onclick = function(){
 //close audio context each time you stop.
 audioCtx.close();
-
 source.stop(0);
 clearInterval(playBar);
 //reset progress bar
@@ -309,7 +320,7 @@ playbackControl.oninput = function() {
 
 //alter biquad filter Q value
 biquadControlQ.oninput = function(){
-	if(source !== undefined){
+	if(source !== undefined || source2 !== undefined){
 	biquadFilter.Q.value = biquadControlQ.value;
 	}
 	//change biquad value on page
@@ -318,7 +329,7 @@ biquadControlQ.oninput = function(){
 
 //alter biquad filter Q value
 biquadControlFq.oninput = function(){
-	if(source !== undefined){
+	if(source !== undefined || source2 !== undefined){
 	biquadFilter.frequency.value = biquadControlFq.value;
 	}
 	//change biquad value on page
