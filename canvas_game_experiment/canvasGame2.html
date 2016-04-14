@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>experiment</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+</head>
+
+<style>
+canvas{
+display: block;
+margin:0 auto;
+margin-top: 2%;
+}
+h1{
+text-align:center;
+}
+#console{
+text-align:center;
+margin:0 auto;
+width: 30%;
+height: auto;
+border: 2px black solid;
+margin-bottom: 10%;
+}
+p{
+text-align: center;
+}
+</style>
+
+<body>
+<h1>canvas experiment</h1>
+<p>space bar to click, arrow keys to move. :) </p>
+<div id='theCanvas'>
+<canvas id='canvas' height='600' width='600' style='border: 1px black solid'></canvas>
+<h2 id='log' style='text-align:center'></h2>
+</div>
+<div id='console'><h3>where am I?</h3>
+<p id='xCoord'></p>
+<p id='yCoord'></p>
+<p id='objColor'></p>
+</div>
+
+<script>
+/******************************************
+turn on cmd line
+in cmd line => Go to the website practice folder
+then type this => 'python -m http.server'
+go to localhost:8000
+click on this file 
+
+TO DO:
+activate the first house - i.e. if 170 < y < 108 and spacebar click => overlay a new canvas with a new context? or wipe out everything?
+this new canvas will be like the inside of the house
+
+now that I've successfully extended the Image constructor and added methods that make it act like a 'person', is there any way 
+I can easily identify which NPC is in front of my character, so that I can have unique NPCs?
+
+can I have the NPCs idle walk?
+
+*******************************************/
+
+//coordinates of character and other variables
+var x;  
+var y;
+var objectPresent = false;
+var objectColor;
+var context = document.getElementById('canvas').getContext("2d");
+
+//log current coordinates
+function logCoordinates(){
+var xCoord = document.getElementById('xCoord');
+var yCoord = document.getElementById('yCoord');
+var objColor = document.getElementById('objColor');
+xCoord.textContent = "X coordinate: " + x;
+yCoord.textContent = "Y coordinate: " + y;
+objColor.textContent = "object color is " + objectColor;
+}
+
+//draw background
+function drawBackground(){
+var background = new Image();
+background.src = "bgTest.png";
+background.onload = function(){
+context.drawImage(background, 0, 0);
+}
+newNPC();
+NPC2.show(100, 126);
+}
+
+/*****************************
+MAKE AN NPC CONSTRUCTOR
+*//////////////////////////
+
+//extend image constructor
+Image.prototype.talk = function(){log.textContent = "blarghhh."};
+
+//all NPCs should have location data logged
+Image.prototype.xLoc;
+Image.prototype.yLoc;
+
+Image.prototype.show = function(x, y){
+this.xLoc = x;
+this.yLoc = y;
+this.src = "sprites1/spriteRight1.png";
+this.onload = function(){
+context.drawImage(this, x, y);
+}
+}
+
+
+Image.prototype.getLocation = function(){
+}
+
+var NPC2 = new Image();
+
+var NPC1 = new Image();
+//draw NPC
+function newNPC(){
+NPC1.src = "sprites1/spriteRight1.png";
+NPC1.onload = function(){
+context.drawImage(NPC1, 300, 126);
+}
+}
+
+//let's record the NPC's coordinates so that we can ID the NPC on click
+var npcLocation = {'x' : 300, 'y': 126};
+//also let's do our character's location too
+var yourLocation = {'x': x, 'y': y};
+//update your location
+function updateLocation(){
+yourLocation['x'] = x;
+yourLocation['y'] = y;
+}
+
+function checkNPC(){
+if(objectPresent){
+	if(yourLocation['x'] + 18 === npcLocation['x']){
+	return true;
+	}
+}
+}
+
+//change pic of character appropriately depending on movement
+//to alternate pics for movement (i.e. right1 and right2) - set up a counter for each direction??
+var rightM = 1;
+var leftM = 1;
+var upM = 1;
+var downM = 1;
+
+function drawCharacterRight(){
+var character = new Image();
+if(rightM%2 !== 0){
+character.src = "sprites1/spriteRight1.png";
+}else{
+character.src = "sprites1/spriteRight2.png";
+}
+rightM++;
+character.onload = function(){
+context.drawImage(character, x, y);
+}
+}
+
+function drawCharacterLeft(){
+var character = new Image();
+if(leftM%2 !== 0){
+character.src = "sprites1/spriteLeft1.png";
+}else{
+character.src = "sprites1/spriteLeft2.png";
+}
+leftM++;
+character.onload = function(){
+context.drawImage(character, x, y);
+}
+}
+
+function drawCharacterUp(){
+var character = new Image();
+if(upM%2 !== 0){
+character.src = "sprites1/spriteUp1.png";
+}else{
+character.src = "sprites1/spriteUp2.png";
+}
+upM++;
+character.onload = function(){
+context.drawImage(character, x, y);
+}
+}
+
+function drawCharacterDown(){
+var character = new Image();
+if(downM%2 !== 0){
+character.src = "sprites1/spriteDown1.png";
+}else{
+character.src = "sprites1/spriteDown2.png";
+}
+downM++;
+character.onload = function(){
+context.drawImage(character, x, y);
+}
+}
+
+//movement
+function left(){
+objectPresent = false;
+drawBackground();
+x-=2;
+drawCharacterLeft();
+}
+
+function right(){
+objectPresent = false;
+drawBackground();
+x+=2;
+drawCharacterRight();
+}
+
+function up(){
+objectPresent = false;
+drawBackground();
+y-=2;
+drawCharacterUp();
+}
+
+function down(){
+objectPresent = false;
+drawBackground();
+y+=2;
+drawCharacterDown();
+}
+
+
+function checkRight(){
+var obstacleColorData = context.getImageData(x+22, y, 1, 20).data;
+var obstacleColor = 'rgb(' + obstacleColorData[0] + ',' + obstacleColorData[1] + ',' + obstacleColorData[2] + ')';
+var check = true;
+for(i=0;i<obstacleColorData.length;i+=4){
+     //if blue or black
+	if(!(obstacleColorData[i+2] <= 10) || obstacleColorData[i] === 0){
+	check = false;
+	objectPresent = true;
+	objectColor = obstacleColorData[i];
+	}
+}
+if(x+22 === 600){
+check = false;
+}
+return check;
+}
+
+function checkLeft(){
+var obstacleColorData = context.getImageData(x-2, y, 1, 20).data;
+var obstacleColor = 'rgb(' + obstacleColorData[0] + ',' + obstacleColorData[1] + ',' + obstacleColorData[2] + ')';
+var check = true;
+for(i=0;i<obstacleColorData.length;i+=4){
+	if(!(obstacleColorData[i+2] <= 10) || obstacleColorData[i] === 0){
+	check = false;
+	objectPresent = true;
+	objectColor = obstacleColorData[i];
+	}
+}
+if(x-2 === 0){
+check = false;
+}
+return check;
+}
+
+function checkUp(){
+var obstacleColorData = context.getImageData(x, y-2, 20, 1).data;
+var obstacleColor = 'rgb(' + obstacleColorData[0] + ',' + obstacleColorData[1] + ',' + obstacleColorData[2] + ')';
+var check = true;
+for(i=0;i<obstacleColorData.length;i+=4){
+	if(!(obstacleColorData[i+2] <= 10) || obstacleColorData[i] === 0){
+	check = false;
+	objectPresent = true;
+	objectColor = obstacleColorData[i];
+	}
+}
+if(y-2 === 0){
+check = false;
+}
+return check;
+}
+
+function checkDown(){
+var obstacleColorData = context.getImageData(x, y+22, 20, 1).data;
+var obstacleColor = 'rgb(' + obstacleColorData[0] + ',' + obstacleColorData[1] + ',' + obstacleColorData[2] + ')';
+var check = true;
+for(i=0;i<obstacleColorData.length;i+=4){
+	if(!(obstacleColorData[i+2] <= 10) || obstacleColorData[i] === 0){
+	check = false;
+	objectPresent = true;
+	objectColor = obstacleColorData[i];
+	}
+}
+if(y+22 === 600){
+check = false;
+}
+return check;
+}
+
+
+function cleanCanvas(){
+//paint canvas white
+context.rect(0,0,600,600);
+context.fillStyle = 'rgb(255,255,255)';
+context.fill();
+}
+
+//draw an obstacle
+function drawObstacle(){
+context.strokeRect(100,100,100,100);
+}
+
+function drawObstacle2(){
+var imgData = context.getImageData(350, 350, 100, 200);
+var someObstacle = imgData.data;
+for(i=0;i<someObstacle.length;i+=4){
+ someObstacle[i] = 120;
+ someObstacle[i+1] = 120;
+ someObstacle[i+2] = 120;
+}
+context.putImageData(imgData, 350, 350);
+//return imgData;
+}
+
+var object = function(){
+x = 20;  
+y = 120;
+//drawCharacter();
+
+//different actions depending on the object
+function doAction(){
+ var log = document.getElementById('log');     
+		if(objectColor === 120){
+		log.textContent = "Brian's house.";
+		}
+		else if(122 <= objectColor && objectColor <= 127){
+		log.textContent = "Nick's house.";
+		}
+		else if(objectColor === 74){
+		log.textContent = "...what a wonderful blue lawn...";
+		}
+		else if(checkNPC()){
+		/////
+		drawBackground();
+		drawCharacterRight();
+		//this makes the NPC turn around to face you (only if you're facing from the left though)
+		NPC1.src = "sprites1/spriteLeft1.png";
+		NPC1.onload = function(){
+		context.drawImage(NPC1, 300, 126);
+		}
+		log.textContent = "Hi, I'm Nick.";
+		//NPC1.talk();
+		}
+		else{
+		log.textContent = "hey, you clicked on me!!!";
+		}
+}
+
+
+$(document).keydown(function(e){
+switch(e.which){
+    case 37: //left arrow key
+	if(checkLeft()){
+	left();
+	logCoordinates();
+	updateLocation();
+	}
+	break;
+	case 39: //right arrow key
+	if(checkRight()){
+	right();
+	logCoordinates();
+	updateLocation();
+	}
+	break;
+	case 40: //down
+	if(checkDown()){
+	down();
+	logCoordinates();
+	updateLocation();
+	}
+	break;
+	case 38: //up
+	if(checkUp()){
+	up();
+	logCoordinates();
+	updateLocation();
+	}
+	break;
+	case 32: //spacebar
+	if(objectPresent){
+	   doAction();
+	}
+	break;
+	default:
+	return;
+	}
+	e.preventDefault();
+});
+}
+
+function drawPath(){
+//draw a path
+context.beginPath();
+context.moveTo(200,200);
+context.lineTo(300,450);
+context.strokeStyle = 'black';
+context.lineWidth = 5;
+context.stroke(); 
+}
+
+$(document).ready(function(){
+cleanCanvas();
+drawBackground();
+newNPC();
+NPC2.show(100,126);
+drawCharacterRight();
+object();
+logCoordinates();
+});
+</script>
+
+
+</body>
+
+</html>
