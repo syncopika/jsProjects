@@ -4,3 +4,9 @@
 [submodule "html_drawing_app"]
 	path = html_drawing_app
 	url = https://github.com/syncopika/html_drawing_app
+[submodule "canvas_game_experiment"]
+	path = canvas_game_experiment
+	url = https://github.com/syncopika/canvas_game_experiment
+[submodule "palette_getter"]
+	path = palette_getter
+	url = https://github.com/syncopika/palette_getter
