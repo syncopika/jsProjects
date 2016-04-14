@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>paletteGetter</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+</head>
+
+<style>
+canvas{
+border: 1px solid black;
+}
+#footer{
+height: 100px;
+text-align: center;
+}
+</style>
+
+<body>
+<div class='container'>
+	<div class='row'>
+		<h1>paletteGetter<h1>
+		<p>description</p>
+	</div>
+	
+	<hr>
+	
+	<div class='row'>
+	
+		<div class='col-lg-6'>
+		<canvas id='canvas1' height='600' width='600'></canvas>
+		</div>
+		
+		<div class='col-lg-6'>
+		<canvas id='canvas2' height='600' width='600'></canvas>
+		</div>
+	
+	</div>
+	
+	<div class='row' id='footer'>
+		<button id='importImage' class='btn' onclick='openFile(handleFile)'>import image</button>
+		<input id="fileInput" style="display:none;" type="file">
+		<button id='getColors' class='btn' onclick='filterCanvas(filterImage)'>get colors</button>
+		<button id='showPalette' class='btn' onclick='showPalette()'>show palette</button>
+		<button id='clearCanvas' class='btn' onclick='clearCanvas()'>clear</button>
+		<button id='getOutline' class='btn' onclick='filterCanvas2(getOnlyOutline)'>get outline</button>
+	</div>
+
+</div><!-- end container-->
+
+<script>
+
+var canvas1 = document.getElementById('canvas1');
+var context1 = canvas1.getContext("2d");
+var canvas2 = document.getElementById('canvas2');
+var context2 = canvas2.getContext("2d");
+var allColors = {};
+var pixelArray;
+
+context1.fillStyle = "#FFFFFF";
+context2.fillStyle = "#FFFFFF";
+//****************** IMPORT IMAGE CODE ***********************
+
+var img = new Image();
+var openFile = (function(){
+return function(c){
+	var fileInput = document.querySelector("#fileInput");
+
+	function onFileChange(e){
+	var files = e.target.files;
+	if(files && files.length>0) //if a file has been selected
+	   c(files)//do some function (defined by c) to that file
+	}
+	fileInput.addEventListener("change", onFileChange, false);
+	fileInput.click(); 
+}
+})();
+
+
+function handleFile(files){
+var file = files[0];
+var imageType = /image.*/;
+if(!file.type.match(imageType)){
+	return;
+}
+
+var reader = new FileReader();
+
+reader.onerror = function(e){
+alert('Error code ' + e.target.error);
+}
+
+
+reader.onload = (function(file){  
+	return function(evt){
+		img.src = evt.target.result;
+	}
+})(file); 
+
+reader.readAsDataURL(file);
+
+img.onload = function(){
+context1.drawImage(img, 0, 0, 600, 600);  
+document.querySelector("#fileInput").value = null;
+}
+}
+
+//************************************************
+
+//************************************** GET PALETTE ***********************
+function filterCanvas(filter){
+var imgData = context1.getImageData(0, 0, 600, 600);
+filter(imgData);
+}
+
+function filterImage(pixels){
+var d = pixels.data;
+
+//pixel data is set up like this:
+//d[i] = ###, d[1+1] = ###, d[i+2] = ###, d[i+3] = ###;
+//     R             G             B         A (alpha)
+//
+//the allColors object should be like {'rgb + d[i] + d[i+1] + d[i+2]': 1}
+
+for(i=0;i < d.length; i+=4){
+//by incrementing every 4, I should be able to get the rgb data for every pixel (since every pixel has 1 rgb set + alpha).
+//var r = d[i];
+//var g = d[i+1];
+//var b = d[i+2];
+var newColor = 'rgba(' + d[i] + ',' + d[i+1] + ',' + d[i+2] + ',' + d[i+3] + ')';
+
+if(isNaN(allColors[newColor])){
+	allColors[newColor] = 1;
+}else{
+	//allColors[newColor]++; //this increment would change the width of every color, depending on how many times it shows up
+}
+//console.log(newColor);
+}
+
+}//end filterImage
+
+function showPalette(){
+//at this point I should get some big list with a bunch of rgb colors hopefully.
+//now we just need to draw those colors in bands whose height is proportional to number of pixels of that color.
+
+//start at position 0 of canvas2.
+var locationOnCanvas = 0;
+var endpoint;
+
+for(color in allColors){
+		endpoint = locationOnCanvas + allColors[color]; //allColors[color]*5 the multiple of 5 makes the widths more visible. 
+		context2.strokeStyle = color;
+		for(i = locationOnCanvas; i < endpoint;i++){
+			//context2.beginPath();
+			context2.moveTo(0, i); //this means make the color band of width 0 to j. 
+			context2.lineTo(600, i); //this means color all the way from left to right
+			context2.stroke();
+			//context2.closePath();
+		}
+		//show a line between all the different colors
+		context2.beginPath();
+		context2.strokeStyle = 'black';
+		context2.moveTo(0, endpoint);
+		context2.lineTo(600, endpoint);
+		context2.stroke();
+		context2.closePath();
+		
+        locationOnCanvas += allColors[color]; //allColors[color]*5
+		//console.log(locationOnCanvas);
+		//console.log(endpoint);
+}
+}//end showPalette
+
+//clear image and image data (i.e. colors)
+function clearCanvas(){
+	context1.clearRect(0, 0, 600, 600);
+	context2.clearRect(0, 0, 600, 600);
+	allColors = {};
+};
+
+//********************************* OTHER THING ***************************
+function filterCanvas2(filter){
+var imgData = context1.getImageData(0, 0, 600, 600);
+filter(imgData);
+context2.putImageData(imgData, 0, 0);
+}
+
+function getOnlyOutline(pixels){
+var d = pixels.data;
+pixelArray = d;
+
+for(i=0;i<d.length;i+=4){
+var r = d[i];
+var g = d[i+1];
+var b = d[i+2];
+
+var cond1 = (r <= 30);
+var cond2 = (g <= 30);
+var cond3 = (b <= 30);
+
+if(!cond1 && !cond2 && !cond3){
+	//set pixel to white if conditions not met
+	d[i] = 255;
+	d[i+1] = 255;
+	d[i+2] = 255;
+	d[i+3] = 255;
+}
+}
+return pixels;
+}
+
+</script>
+
+</body>
+</html>
