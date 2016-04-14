@@ -1,3 +1,6 @@
 [submodule "audio_app"]
 	path = audio_app
 	url = https://github.com/syncopika/audio_app
+[submodule "html_drawing_app"]
+	path = html_drawing_app
+	url = https://github.com/syncopika/html_drawing_app
