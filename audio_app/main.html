@@ -46,7 +46,6 @@ margin-bottom: 12%;
 <div id='player1'>
 <p> regular HTML5 audio player here </p>
 <audio id='demo' src='route 205.mp3' controls preload='auto'></audio>
-<!-- C:\Documents and Settings\HUNG\Desktop\あすいろ恋模様 full SB69クリティクリスタ.mp3-->
 <p>name of audio file: </p>
 <p id='audioName'></p>
 
@@ -72,10 +71,16 @@ margin-bottom: 12%;
 
 <hr>
 
-<div class='col-lg-2 col-lg-offset-1 col-sm-2 col-sm-offset-1'>
+<div class='col-lg-2 col-sm-2'>
 <p>set playback rate</p>
 <input class="playback-rate-control" type="range" min="0.25" max="3" step="0.05" value="1">
 <span id="playbackValue">1.0</span>
+</div>
+
+<div class='col-lg-2  col-sm-2'>
+<p>detune</p>
+<input class="detune-control" type="range" min="-100" max="100" step="5" value="0">
+<span id='detuneValue'>0.0</span>
 </div>
 
 <div class='col-lg-2  col-sm-2'>
@@ -138,6 +143,7 @@ var distortion;//add distortion
 var audioToKaraoke; //buffer for karaoke feature
 var karaoke = false;
 var duration; //duration of selected track (passed to innerHTML)
+var controlDetune = document.querySelector('.detune-control');
 var playbackControl = document.querySelector('.playback-rate-control');
 var biquadControlQ = document.querySelector('.biquad-control-q');
 var biquadControlFq = document.querySelector('.biquad-control-fq');
@@ -178,11 +184,8 @@ function makeDistortionCurve(amount){
 		return curve;	
 		};
  
-//initialize the sound system
-function init(){
-	source = audioCtx.createBufferSource();
-	loadFile();
-}
+
+
 
 //now load and decode sound once sound system initialized (and after user has selected a sound file!)
 function loadFile(){
@@ -237,8 +240,6 @@ function loadFile(){
         
 		//add distortion
 		distortion = audioCtx.createWaveShaper();
-		//distortionValue = distortionControl.value;
-		//distortion.curve = makeDistortionCurve(distortionValue);
 		
 		});
 	};
@@ -266,7 +267,6 @@ function timer(){
 
 //start track play button
 var play = document.getElementById('play');
-
 play.onclick = function(){
 
 //hook up biquad filter
@@ -274,8 +274,8 @@ biquadFilter.connect(audioCtx.destination);
 source.connect(biquadFilter);
 
 //hook up distortion-maker
-distortion.connect(audioCtx.destination);
-source.connect(distortion);
+//distortion.connect(audioCtx.destination);
+//source.connect(distortion);
 
 if(karaoke == true){
 	source.buffer = audioToKaraoke; //this will modify the current buffer, which is supposed to be the normal audio if this function is not executed.
@@ -296,14 +296,12 @@ if(karaoke == true){
 var stop = document.getElementById('stop');
 
 stop.onclick = function(){
-	//close audio context each time you stop.
-	audioCtx.close();
 	source.stop(0);
 	clearInterval(playBar);
 	//reset progress bar
 	ctx.clearRect(0,0, Math.floor(duration), 30);
 	counter=0;
-	//re-initialize
+	//re-initialize (make a new buffer to replay audio)
 	init();
 }
 
@@ -337,8 +335,21 @@ biquadControlFq.oninput = function(){
    document.getElementById('biquadValueFq').innerHTML = biquadControlFq.value;
 }
 
+//control detuning
+controlDetune.oninput = function(){
+	if(source !== undefined || source2 !== undefined){
+	source.detune.value = controlDetune.value;
+	}
+	//change detuning value on page
+   document.getElementById('detuneValue').innerHTML = controlDetune.value;
+}
+
 //control distortion
 distortionControl.oninput = function(){
+//turn on distortion only when user activates so as to not add unnecessary gain
+//remember that hooking up more things in the beginning means more gain = yucky sound
+distortion.connect(audioCtx.destination);
+source.connect(distortion);
 	if(source !== undefined){
 	distortionValue = distortionControl.value;
 		if(distortionValue == 0){
@@ -349,6 +360,12 @@ distortionControl.oninput = function(){
 		}
 	}
    document.getElementById('distortionValue').innerHTML = distortionControl.value;
+}
+
+//initialize the sound system
+function init(){
+	source = audioCtx.createBufferSource();
+	loadFile();
 }
 
 //IMPORTING AUDIO CODE HERE //
