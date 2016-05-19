@@ -241,12 +241,10 @@ function heatwave(pixels){
 	return pixels;
 }
 
-
-
 //RESET PICTURE
 function reset(){
 	context.clearRect(0, 0, theCanvas.width, theCanvas.height);
-	context.drawImage(img, 0, 0, 600, 600);
+	context.drawImage(img, 0, 0, 700, 700);
 }
 
 
