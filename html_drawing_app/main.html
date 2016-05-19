@@ -2,36 +2,38 @@
 <html>
 
 <head>
-<title>syncopika's animation app</title>
+<title>drawing/animation app</title>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script src="filterslib.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 <script>
 var layerArray = ['canvas0'];
 var curPage = 0;
 var curCanvas = layerArray[curPage];
 </script>
-<script src="/filterslib.js"></script>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 </head>
 
 <style>
-h1,p{
+
+#header{
 text-align:center;
 }
 
 #rightCol{
+margin-top: -5%;
 text-align:center;
 }
 
-#toolbar, #filters{
+#toolbar{
 margin: 10px auto;
 border: black 1px solid;
 padding:2px;
-width:550px;
 text-align:center;
 margin-bottom: 5%;
 }
 
-#toolbar button, #filters button{
+#toolbar button{
 margin-bottom: 5px;
 padding-left: 2px;
 padding-right: 2px;
@@ -41,135 +43,134 @@ padding-right: 2px;
 border: 1px black solid;
 }
 
-#counter{
-text-align:center;
-}
-
 li{
 display:inline-block;
 }
 
 #picture{
-width: 650px;
-display:block;
+width: 750px;
 margin:0 auto;
 text-align:center;
 }
 
-#colorPicker, #playPanel{
-width: 550px;
+#playPanel{
 margin: 0 auto;
 margin-bottom: 30px;
 text-align:center;
-}
-
-table{
-margin: 0 auto;
-}
-
-#colorTable tr td{
-border: 1px black solid
-}
-
-#showColor{
-border: 1px black solid;
 }
 
 #footer{
 height: 45px;
 }
 
+#colorWheel{
+border: black solid 1px;
+margin: 0 auto;
+display: block;
+}
+
+#filters{
+width: 50%;
+margin: 0 auto;
+margin-bottom: 5%;
+}
+
+.dropdown{
+width: 50%;
+}
+
+.dropdown-menu{
+left: 0;
+right: 0;
+}
+
+.dropdown-toggle{
+width: 100%;
+}
+
+.dropdown-menu>li{
+display:block;
+text-align:center;
+}
+
+.dropdown-menu>li:hover{
+background-color: #dddeee;
+}
+
+#toggleToolbar{
+margin-top: 5px;
+margin-bottom: 5px;
+}
 </style>
 
 <body>
-<div id='container' class='container'>
+<div class='container-fluid'>
 
-<div class='row'>
+<div class='row' id='header'>
 	<h1>animation/drawing app</h1>
 	<p>link to source code</p>
-</div>
-
-<div class='row'>
-	<div class='col-md-8 col-md-offset-2'>
-	<p class='bg-danger'>some brush features may not work well right now...sorry</b></p>
-</div>
-</div>
-
-<div class='row'>
-	<div class='col-md-12' id='counter'>
+	<button id='toggleToolbar' class='btn' onclick='toggleToolbar()'> toggle toolbar </button>
+	
 		<ul>
-			<li id='down'><h1><=</h1></li>
+			<li id='down'><h2><=</h2></li>
 			<li><h2 id='count'></h2></li>
-			<li id='up'><h1>=></h1></li>
+			<li id='up'><h2>=></h2></li>
 		</ul>
-	</div>
+
 </div>
 
-<div class='row'>
-										
-	<div id='picture' class='col-md-7'>
-		<canvas id="canvas0" width='600' height='600' class='canvas'></canvas> 
-	</div>
 
-	<div id='rightCol' class='col-md-5'>
+<div class='row'>		
+					
+	<div class='col-md-6 col-lg-6 col-lg-offset-3 col-md-offset-3'>
+		<div id='picture'>
+			<canvas id="canvas0" width='700' height='700' class='canvas'></canvas> 
+		</div>
+	</div>
+	
+	<!-- TOOLBAR -->
+	<div id='rightCol' class='col-md-3 col-lg-3' style='border: black solid 1px'>
+
 		<h2>toolbar</h2>
 		<p>tips:</p>
 		<p>-use spacebar to add a new layer!</p>
 		<p>-use the arrow keys to go forward or backward!</p>
-
+ 
 			<div id='toolbar'>
 			  <p class="text-info"> general tools </p>
-				<button id = 'import' class='btn' onclick='openFile(handleFile)'>import pic</button>
-				<input id="fileInput" style="display:none;" type="file">
-				<button id='clear' class='btn'>clear</button>
-				<button id='reset' class='btn'>reset</button>
-				<button id='5' class='size btn'>normal size</button>
-				<button id='2' class='size btn'>small size</button>
-				<button id='cbrush' class='btn'>crazy brush</button>
-				<button id='lbrush' class='btn'>long brush</button>
-				<button id='colorBg' class='btn'>bg gradient</button>
-				<button id='#ffcf33' class ='color btn'>yellow</button>
-				<button id='#affec4' class ='color btn'>green</button>
-				<button id='#ffffff' class ='color btn'>eraser</button>
-				<button id='addPage' class='btn'>add another layer</button>
-				<button id ='clone' class='btn'> clone current layer</button>
+					<button id = 'import' class='btn' onclick='openFile(handleFile)'>import pic</button>
+					<input id="fileInput" style="display:none;" type="file">
+					<button id='clear' class='btn'>clear</button>
+					<button id='reset' class='btn'>reset</button>
+					<button id='#ffffff' class ='color btn'>eraser</button>
+					<button id='addPage' class='btn'>add another layer</button>
+					<button id ='clone' class='btn'> clone current layer</button>
+					<p>change brush size</p>
+					<input class='brushSize' type='range' min='.5' max='15' step='.5' value='5'>
+					<span id='brushSizeValue'> 5.0 </span>
 			</div>
 			
-			<div id='filters'>
-			  <p class="text-info"> filters </p>
-				<button id='gray' class='btn' onclick='filterCanvas(grayscale)'>grayscale</button>
-				<button id='sepia' class='btn' onclick='filterCanvas(sepia)'>sepia</button>
-				<button id='saturate' class='btn' onclick='filterCanvas(saturate)'>saturate</button>
-				<button id='swap' class='btn' onclick='filterCanvas(swap)'>swap</button>
-				<button id='banded' class='btn' onclick='filterCanvas(banded)'>banded</button>
-				<button id='scary' class='btn' onclick='filterCanvas(scary)'>scary</button>
-				<button id='something' class='btn' onclick='filterCanvas(something)'>something</button>
-				<button id='something2' class='btn' onclick='filterCanvas(purplizer)'>purplizer</button>
-				<button id='something3' class='btn' onclick='filterCanvas(heatwave)'>heatwave</button>
-				<button id='reset' class='btn' onclick='reset()'>reset</button>
-			</div>
-
-			<div id='colorPicker'>
-				<p class="text-info"> custom colors </p>
-				<table id='colorTable'>
-					<tr>
-					<td id='showColor' colspan='3'>SHOW COLOR HERE</td>
-					</tr>
-						<tr>
-						<td>red</td>
-						<td>blue</td>
-						<td>green</td>
-						</tr>
-							<tr>
-							<td><input type='text' id='red'></td>
-							<td><input type='text' id='blue'></td>
-							<td><input type='text' id='green'></td>
-							</tr>
-						<tr>
-						<td colspan='3'><button class='btn' id='setColor'>set color</button></td>
-						</tr>
-				</table>
-			</div>
+	
+	 <div id='filters' class="dropdown">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			filters <span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu">
+				<li onclick='filterCanvas(grayscale)'>grayscale</li>
+				<li onclick='filterCanvas(sepia)'>sepia </li>
+				<li onclick='filterCanvas(saturate)'>saturate</li>
+				<li onclick='filterCanvas(swap)'>swap</li>
+				<li onclick='filterCanvas(banded)'>banded</li>
+				<li onclick='filterCanvas(scary)'>scary</li>
+				<li onclick='filterCanvas(purpleChrome)'>purpleChrome</li>
+				<li onclick='filterCanvas(purplizer)'>purplizer</li>
+				<li onclick='filterCanvas(heatwave)'>heatwave</li>
+				<li onclick='reset()'>reset</button>
+			</ul>
+	</div>
+		
+			<canvas id='colorWheel' height='200' width='200'></canvas>
+			<p id='pickedColor'>color picked goes here</p> 
 			
 			<div id='playPanel'>
 				<p class='text-info'>play panel</p>
@@ -177,9 +178,10 @@ height: 45px;
 				<button id='stop' class='btn' onclick = 'stop()'> stop </button>
 				<button id='backward' class='btn' onclick='playBackward()'> <= </button>
 			</div>
-
+		
+		
 		</div> <!--end toolbar (right col) -->
-
+ 
 </div> <!-- end row-->
 
 <div id='footer' class='row'>
@@ -187,12 +189,79 @@ height: 45px;
 
 </div> <!--close container -->
 
-
 <script> 
+//check this out! http://perfectionkills.com/exploring-canvas-drawing-techniques/
+
+//for colorWheel
+var colorWheel = document.getElementById('colorWheel');
+var colorWheelContext = colorWheel.getContext('2d');
+
+var x = colorWheel.width / 2;
+var y = colorWheel.height / 2;
+var radius = 90;
+
+for(var angle = 0; angle <= 5600; angle++){
+	var startAngle = (angle-2)*Math.PI / 180; //convert angles to radians
+	var endAngle = (angle)*Math.PI / 180;
+	
+	colorWheelContext.beginPath();
+	colorWheelContext.moveTo(x, y);
+	//.arc(x, y, radius, startAngle, endAngle, anticlockwise)
+	colorWheelContext.arc(x, y, radius, startAngle, endAngle, false);
+	colorWheelContext.closePath();
+	
+	//use .createRadialGradient to get a different color for each angle
+	//createRadialGradient(x0, y0, r0, x1, y1, r1)
+	var gradient = colorWheelContext.createRadialGradient(x, y, 0, startAngle, endAngle, radius);
+	gradient.addColorStop(0, 'hsla(' + angle + ', 10%, 100%, 1)');
+	gradient.addColorStop(1, 'hsla(' + angle + ', 100%, 50%, 1)');
+	
+	colorWheelContext.fillStyle = gradient;
+	colorWheelContext.fill();
+}
+
+//pick a color from color wheel
+
+$('#colorWheel').mousedown(function(e){ 
+var x = e.offsetX;
+var y = e.offsetY;
+var colorPicked = colorWheelContext.getImageData(x, y, 1, 1).data;
+var colorPickedText = document.getElementById('pickedColor');
+colorPickedText.textContent = 'rgb(' + colorPicked[0] + ',' + colorPicked[1] + ',' + colorPicked[2] + ')';
+$('#pickedColor').css({'background-color': colorPickedText.textContent});
+curColor = 'rgb(' + colorPicked[0] + ',' + colorPicked[1] + ',' + colorPicked[2] + ')';
+})
+
+
+//brush size changer
+var brushSize = document.querySelector('.brushSize');
+brushSize.oninput = function(){
+curSize = brushSize.value;
+$('#brushSizeValue').html(brushSize.value);
+}
 
 //stuff for the page-count thing at the top
 var page = 0;
 $('#count').html(curPage);//make sure 0 shows up when page loads
+
+
+
+//toggle toolbar
+$('#rightCol').hide();
+var showToolbar = false;
+
+function toggleToolbar(){
+if(!showToolbar){
+	$('#rightCol').show();
+	showToolbar = true;
+}else{
+	$('#rightCol').hide();
+	showToolbar = false;
+}
+}
+
+
+
 
 //these gigantic objects will store all the pixel data for each canvas!
 //ideally the user might want to go back to a canvas and manipulate that canvas
@@ -241,24 +310,33 @@ curClickSize = [];
 var lbrush = 0; 
 var curSize = 5;
 var cbrush = 0;
-var curColor = '#df4b26';
+var curColor = '#000000'; //'#df4b26';
 
 var theCanvas = document.getElementById(curCanvas);
 var context = theCanvas.getContext("2d");
 
 //set initial canvas bg color to white!
 context.fillStyle = "#FFFFFF";
-context.fillRect(0,0,600,600);
+context.fillRect(0,0,theCanvas.width,theCanvas.height);
 
 //define redraw
 function redraw(){
 
 context.lineJoin = 'round';
 
+//new kind of brush
+/*
+function weirdBrush(){
+var random = Math.random()*(15-1) + 1;
+context.moveTo(clickX[i-1]*random, clickY[i-1]);
+context.lineTo(clickX[i]*random, clickY[i]/random);
+}
+*/
+
 for(var i = 0; i < clickX.length; i++){
   context.beginPath();
   //this helps prevent dragging!!! 
-  if(clickDrag[i] && i){ //this is the default condition??
+  if(clickDrag[i] && i){ 
   context.moveTo(clickX[i-1], clickY[i-1]);//this might explain buggy crazy brush when copying a canvas. try changing the -1. 
   //context.lineTo(clickX[i], clickY[i]);
   }
@@ -299,20 +377,21 @@ curClickColor.push(curColor);
 curClickSize.push(curSize);
 }
 
-//define draw 
-function draw(){
-var paint;
-var rect = theCanvas.getBoundingClientRect();
 
 //#picture is the container of the canvas, so I used #picture to get the top and left coordinates
 var offsetTop = $('#picture').position()["top"];  
 var offsetLeft = $('#picture').position()["left"];
 
+//define draw 
+function draw(){
+var paint;
+//var rect = theCanvas.getBoundingClientRect();
+
 $('#' + curCanvas).mousedown(function(e){
 if(e.which === 1){ //when left click only
 paint = true;
-var mouseX = e.pageX - offsetLeft - 25;
-var mouseY = e.pageY - offsetTop;
+var mouseX = e.offsetX;
+var mouseY = e.offsetY;
 addClick(mouseX, mouseY);
 redraw();
 }
@@ -321,11 +400,11 @@ redraw();
 $('#' + curCanvas).mousemove(function(e) {
   if (paint){
      if(cbrush === 1 || lbrush === 1){
-	 addClick(e.pageX - offsetLeft - 25, e.pageY - offsetTop, false);
+	 addClick(e.offsetX, e.offsetY, false);
 	 }
 	 else{
 	 //set dragging to 1 = solid lines when moving the mouse. 
-	 addClick(e.pageX - offsetLeft - 25, e.pageY - offsetTop, true);
+	 addClick(e.offsetX, e.offsetY, true);
 	 }
 	 redraw();
 }
@@ -348,7 +427,7 @@ $('#clear').click(function(){
 context = document.getElementById(curCanvas).getContext("2d");
 context.clearRect(0, 0, theCanvas.width, theCanvas.height);
 context.fillStyle = "#FFFFFF";
-context.fillRect(0,0,600,600);
+context.fillRect(0,0,theCanvas.width,theCanvas.height);
 clearClick();
 clearCurClick();
 //reset saved pixel data
@@ -371,7 +450,7 @@ $("#reset").click(function(){
 cbrush = 0;
 lbrush = 0;
 curSize = 5;
-curColor = '#df4b26';
+curColor = '#000000'; //default color is black
 });
 
 
@@ -408,7 +487,7 @@ canvasClone.appendTo('#picture');
 
 //set canvas bg color to white!
 $('#' + newId)[0].getContext('2d').fillStyle = "#FFFFFF";
-$('#' + newId)[0].getContext('2d').fillRect(0,0,600,600);
+$('#' + newId)[0].getContext('2d').fillRect(0,0,theCanvas.width,theCanvas.height);
 
 }
 
@@ -427,7 +506,7 @@ canvasClone.appendTo('#picture');
 
 //set canvas bg color to white!
 $('#' + newId)[0].getContext('2d').fillStyle = "#FFFFFF";
-$('#' + newId)[0].getContext('2d').fillRect(0,0,600,600);
+$('#' + newId)[0].getContext('2d').fillRect(0,0,theCanvas.width,theCanvas.height);
 
 //append new cloned canvas id to dataX, dataY objects with cloned pixel data.
 dataX[newId] = dataX[curCanvas];
@@ -497,7 +576,6 @@ $('#' + layerArray[curPage-1]).css({"z-index":0,"opacity":.6});
 //when you leave a frame, reset everything!
 clearClick();
 clearCurClick();
-
 draw();
 }
 
@@ -583,13 +661,14 @@ clearInterval(play);
 }
 
 $('#colorBg').click(function(){
-for(i = 0;i < 255; i++){ //if i < 600, then half the canvas will be white.
+for(i = 0;i < 255; i++){ 
 context.fillStyle = 'rgb(' + (i-50) + ',' + (i-20) + ',' + (i-10) + ')';
-context.fillRect(0,i,600,600);
+context.fillRect(0,i,theCanvas.width,theCanvas.height);
 }
 });
 
 $(document).ready(function(){
+$('.dropdown-toggle').dropdown();
 draw();
 });
 //end

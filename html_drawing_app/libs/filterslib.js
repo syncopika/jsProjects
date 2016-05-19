@@ -5,6 +5,7 @@
 //reference to modular pattern: http://weblogs.asp.net/dwahlin/techniques-strategies-and-patterns-for-structuring-javascript-code-revealing-module-pattern
 
 var img = new Image();
+//prompt user to select pic from disk
 var openFile = (function(){
 return function(c){
 	var fileInput = document.querySelector("#fileInput");
@@ -14,6 +15,8 @@ return function(c){
 	if(files && files.length>0) //if a file has been selected
 	   c(files)//do some function (defined by c) to that file
 	}
+	//bind the onFileChange function to fileInput. this triggers the next phase - getting the data from the picture file. 
+	//i think the 'change' event means just when you choose a file...
 	fileInput.addEventListener("change", onFileChange, false);
 	fileInput.click(); 
 }
@@ -29,26 +32,30 @@ if(!file.type.match(imageType)){
 
 var reader = new FileReader();
 
+//if reader is not working??
 reader.onerror = function(e){
 alert('Error code ' + e.target.error);
 }
 
 //Create a closure (notice modular pattern here) to capture file information
+//after the selected file is read, its contents are available and this function is executed
 reader.onload = (function(file){  
 	return function(evt){
 		//attach the name of the file onto the webpage
+		//document.getElementById('fileName').innerHTML = file.name;
 		//set the img src to the file
 		img.src = evt.target.result;
 	}
-})(file); 
+})(file); //make sure file is passed to this function
 
+//read in the file as a data url (why over here though?)
 reader.readAsDataURL(file);
 
 //send the pic to the canvas
 //note that the image has to load first! so do img.onload...
 img.onload = function(){
-context.drawImage(img, 0, 0, 600, 600); 
-//reset the value for the HTML input file thing so that you can use the same pic for consecutive frames!  
+context.drawImage(img, 0, 0, 700, 700); //figure out how to get canvas.height here to work..?
+//ah! reset the value for the HTML input file thing so that you can use the same pic for consecutive frames!  
 document.querySelector("#fileInput").value = null;
 }
 }
@@ -57,7 +64,7 @@ document.querySelector("#fileInput").value = null;
 //general filtering function. pass any kind of filter through this function.
 //bind to onclick in html! 
 function filterCanvas(filter){
-var imgData = context.getImageData(0, 0, 600, 600);
+var imgData = context.getImageData(0, 0, 700, 700);
 filter(imgData);
 context.putImageData(imgData, 0, 0);
 }
@@ -149,7 +156,7 @@ function banded(pixels){
 	}
 }
 
-function something(pixels){
+function purpleChrome(pixels){
 	var d = pixels.data;
 	for(var i=0; i<d.length;i++){
 		var r = d[i];
@@ -233,6 +240,8 @@ function heatwave(pixels){
 	}
 	return pixels;
 }
+
+
 
 //RESET PICTURE
 function reset(){
