@@ -67,74 +67,73 @@ var connect = document.getElementById('connect');
 var xCoord = []; //store x coordinates here
 var yCoord = []; //store y coordinates here
 
+//helper function
+function assembleEq(number, equationComponents){
+  var total = 0;
+  for(i = 0; i < equationComponents.length; i++){
+    //check indices for x variables
+    if(equationComponents[i].indexOf('x') >= 0){
+  
+      //check for coefficients
+      var segment = equationComponents[i];
+      var coeff = segment.substring(0,segment.indexOf('x'));
+      if(coeff === '' || coeff === '+' || coeff === '-'){
+        coeff = coeff + 1;
+      }
+    
+      coeff = parseInt(coeff);
+  
+      //check for exponents
+      var segment2 = segment.substring(segment.indexOf('x'),segment.length);
+     
+      //use regex
+      var regx = new RegExp(/[0-9]/,'g');
+      var exp = parseInt(segment2.match(regx));//parseInt(segment2);
+      //console.log(exp)
+      if(isNaN(exp)){
+        exp = 1;
+      }
+      //console.log(exp)
+      var product = Math.pow(number, exp) * coeff;
+      total += product;
+    }else{
+      total += parseInt(equationComponents[i]);
+    }
+  }
+  return total;
+}
+
+
 button.onclick = function(){//alert(formula.value);
 
 //pretty basic right now, but I can calculate coordinates of some quadratic equations with this! :D 
 var a = formula.value; //input should just be like 2x^2+5, no y=... needed.
+var newStr = '';
 
-/*BETTER FORMULA DISSECTION
-var eq = '10x^3-2x^2+8' //i.e. any formula
-var a = eq.split('+')
-var b = a.map(function(a){return a.split('-')})
-console.log(b.join().split(','))
-
-//calculate sin
-i.e. sin(15)
-
-function sin(degrees){
-var pi = 3.14159;
-var x = degrees*((2*pi)/360);
-var value = x - (Math.pow(x,3)/factorial(3)) + (Math.pow(x,5)/factorial(5)) - (Math.pow(x,7)/factorial(7)) + (Math.pow(x,9)/factorial(9));
-return value;
-}
-
-function factorial(x){
-var total = 1;
-while(x>0){
-total = total*x;
-x = x-1
-}
-return total;
-}
-
-*/
-
-var exp = /[x^\d]*[^+]/g;
-var c = a.match(exp);
-//alert(c);
-var numOfCoord = numCoords.value; //also input by user
-//changed i to include negative x's
-for(i=-5;i<numOfCoord;i++){ //depends on number of coordinates needed
-  var y = 0;
-  var yTotal = 0;
-  xCoord.push(i);
-  var constant = parseInt(c[c.length-1]); //the constant (i.e. number w/ no variable) will always be at the end
-  for(j=0;j<c.length;j++){ //depends on x variables in c
-    if(c[j].indexOf('x') !== -1){
-	  
-      var coeff = parseInt(c[j][0]);
-      if(isNaN(coeff)){
-	  coeff = 1;
-	  };
-
-	  var power = parseInt(c[j][c[j].length-1]); //get the last number (i.e. exponent) in the string of each index in c
-      
-       if(a.indexOf('+') == -1){
-        constant = 0;
-      }
-	 y = coeff*(Math.pow(i, power)); //i increments up 1 each loop      
-     yTotal += y; //this is necessary if you have like x^3 + x^2 ...this way x^3 and x^2 are added before getting pushed to the array yCoord
-    }
+//modify string to have spaces right before any addition or subtraction places
+for(i = 0; i < a.length; i++){
+  if(a[i+1] === '-' || a[i+1] === '+'){
+    newStr += a[i];
+    newStr += ' ';
+  }else{
+    newStr += a[i];
   }
-  yTotal += constant;//add the constant at the very end (esp. important if you have x^3 + x^2...)
-  yCoord.push(yTotal);
+}
+
+var b = newStr.split(' '); //an array (the user-inputted equation broken into 'chunks') that will be passed to assembleEq();
+
+var numOfCoord = numCoords.value; 
+for(j = -5; j < numOfCoord; j++){  //YOU MUST MAKE THIS LOOP USE A COUNTER VARIABLE NAME OTHER THAN 'i' !
+  xCoord.push(j);
+  var y = assembleEq(j, b);
+  yCoord.push(y);
 }
 //console.log(xCoord)
 //console.log(yCoord)
 
 //dynamically generate a table with all the coordinates
 var table = '<h3>coordinates</h3><table id=\'coords\'><tr><td>x</td><td>y</td></tr>';
-for(i=0;i<xCoord.length;i++){
+for(i = 0; i < xCoord.length; i++){
 table += '<tr><td>' + xCoord[i] + '</td><td>' + yCoord[i] + '</td></tr>';
 }
 table += '</table>'
@@ -245,6 +244,105 @@ for(i=0;i<600;i=i+10){
 
 }
 drawGrid();
+
+
+
+/*********************** NEW BETTER WAY TO PARSE EQUATION!!!! :DDDDDDDD **********************************
+
+var a = 'x^2-3x+5'
+var newStr = '';
+//modify string to have spaces right before any addition or subtraction places
+for(i = 0; i < a.length; i++){
+  if(a[i+1] === '-' || a[i+1] === '+'){
+    newStr += a[i];
+    newStr += ' ';
+  }else{
+    newStr += a[i];
+  }
+}
+
+var b = newStr.split(' ');
+
+function assembleEq(number, equationComponents){
+  var total = 0;
+  for(i = 0; i < equationComponents.length; i++){
+    //check indices for x variables
+    if(equationComponents[i].indexOf('x') >= 0){
+  
+      //check for coefficients
+      var segment = equationComponents[i];
+      var coeff = segment.substring(0,segment.indexOf('x'));
+      if(coeff === '' || coeff === '+' || coeff === '-'){
+        coeff = coeff + 1;
+      }
+    
+      coeff = parseInt(coeff);
+  
+      //check for exponents
+      var segment2 = segment.substring(segment.indexOf('x'),segment.length);
+     
+      //use regex
+      var regx = new RegExp(/[0-9]/,'g');
+      var exp = parseInt(segment2.match(regx));//parseInt(segment2);
+      //console.log(exp)
+      if(isNaN(exp)){
+        exp = 1;
+      }
+      //console.log(exp)
+      var product = Math.pow(number, exp) * coeff;
+      total += product;
+    }else{
+      total += parseInt(equationComponents[i]);
+    }
+  }
+  return total;
+}
+
+
+//OLD CODE
+
+var exp = /[x^\d]*[^+]/g;
+var c = a.match(exp);
+//alert(c);
+var numOfCoord = numCoords.value; //also input by user
+//changed i to include negative x's
+for(i=-5;i<numOfCoord;i++){ //depends on number of coordinates needed
+  var y = 0;
+  var yTotal = 0;
+  xCoord.push(i);
+  var constant = parseInt(c[c.length-1]); //the constant (i.e. number w/ no variable) will always be at the end
+  for(j=0;j<c.length;j++){ //depends on x variables in c
+    if(c[j].indexOf('x') !== -1){
+	  
+      var coeff = parseInt(c[j][0]);
+      if(isNaN(coeff)){
+	  coeff = 1;
+	  };
+
+	  var power = parseInt(c[j][c[j].length-1]); //get the last number (i.e. exponent) in the string of each index in c
+      
+       if(a.indexOf('+') == -1){
+        constant = 0;
+      }
+
+	 y = coeff*(Math.pow(i, power)); //i increments up 1 each loop      
+     yTotal += y; //this is necessary if you have like x^3 + x^2 ...this way x^3 and x^2 are added before getting pushed to the array yCoord
+    }
+  }
+  yTotal += constant;//add the constant at the very end (esp. important if you have x^3 + x^2...)
+  yCoord.push(yTotal);
+}
+//console.log(xCoord)
+//console.log(yCoord)
+
+
+
+//previous cases where old code failed:
+- 2x+5
+- 2x
+- x^2+2x+5
+
+*//////////////////////////////////////////////////////////////////
 </script>
 
 </html>
