@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<title> chinese test </title>
+	<meta charset = 'utf-8'>
+	<style>
+		div {
+			text-align:center;
+		}
+		
+		#body{
+		margin-top: 8%;
+		}
+		
+	</style>
+</head>
+
+
+<body>
+	
+	<div id='header'>
+	<h2>test your Chinese knowledge </h2>
+	</div>
+	
+	<div id='body'>
+	
+	<div id='showQuestion'>
+	<h1 id='question'></h1>
+	</div>
+	
+	<div id='showAnswer'>
+	<input id="answer" type='text'>
+	<button id="submitAnswer" onclick="evaluateAnswer()">submit</button>
+	</div>
+	
+	<div id='showResult'>
+	<h1 id='result'></h1>
+	</div>
+	
+	<div>
+	<button id="playAgain" onclick="play()">new question?</button>
+	<select id="mode">
+		<option>pinyin</option>
+		<option>definition</option>
+	</select>
+	</div>
+	
+	</div> <!-- end div body -->
+</body>
+
+<script>
+
+var char0 = {value: "熊", pinyin: "xiong", definition: "bear"};
+var char1 = {value: "謝", pinyin: "xie", definition: "thanks"};
+var char2 = {value: "鴨", pinyin: "ya", definition: "duck"};
+var char2 = {value: "我", pinyin: "wo", definition: "me"};
+var theChar; //this is the character that is shown to the user
+var characters = [char0, char1, char2];
+
+var question = document.getElementById("question");
+var answer = document.getElementById("answer");
+var result = document.getElementById("result");
+var modeSelect = document.getElementById("mode");
+
+//modes: pinyin, definition
+var mode = "pinyin"; //pinyin mode is default
+
+modeSelect.addEventListener('change', function(){
+	mode = modeSelect.value;
+	//change current question appropriately depending on the new mode
+	question.textContent = "what is the " + mode + " for " + theChar.value;
+});
+
+function pickRandomChar(){
+	var rand = Math.floor(Math.random() * 3);
+	theChar = characters[rand];
+	if(mode === "pinyin"){
+	question.textContent = "what is the pinyin for " + theChar.value;
+	}else if(mode === "definition"){
+	question.textContent = "what is the definition for " + theChar.value;
+	}
+}
+
+function evaluateAnswer(){
+
+	if(mode === "pinyin"){
+		if(answer.value === theChar.pinyin){
+			result.textContent = "CORRECT!!";
+		}else{
+			result.textContent = "NOPE! TRY AGAIN?";
+		}
+	}else if(mode === "definition"){
+		if(answer.value === theChar.definition){
+			result.textContent = "CORRECT!!";
+		}else{
+			result.textContent = "NOPE! TRY AGAIN?";
+		}
+	}
+}
+
+function play(){
+	//clear question
+	question.textContent = "";
+	pickRandomChar();
+}
+
+//page on load
+pickRandomChar();
+
+</script>
+
+</html>
