@@ -51,13 +51,6 @@ padding-bottom: 30px;
 </body>
 
 <script>
-//a different way to approach equation parsing
-//the idea is to have a function like this: var eq = '(3 + 20) * x * 57 * (Math.PI / 180) / (Math.PI + 20 * Math.abs(x))'
-//then you can make a new Function object, like this: var equation = new Function('x', 'return ' + eq);
-//the 'x' as the first argument means that any argument passed to equation() will be placed wherever 'x' is located in eq.
-//this is useful for math equtions because this equation() function replaces 'x' with a number (i.e. equation(5), x becomes 5)in the string 'eq', and then returns the whole equation.
-//because 'return ' + eq joins eq and the return statement, the whole line is evaluated (and is not just some string). 
-//But my needs are a bit more complicated I think so regex might be the best way to go. 
 
 var formula = document.getElementById('formula');
 var numCoords = document.getElementById('coord');
