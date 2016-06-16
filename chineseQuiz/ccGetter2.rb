@@ -30,15 +30,22 @@ doc2 = Nokogiri::HTML(open(newURL))
 file.puts "var characters = ["
 
 counter = 1
+
 while (doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text != "")	
+	counterPinyin = 1
 	character = doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text
     
 	newURL = URI.escape(base_url2 + character)
 	doc3 = Nokogiri::HTML(open(newURL, :allow_redirections => :all, :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE))
 	
-	pinyin = doc3.xpath('(//tt/span/a)[1]').text
-	definition =  doc3.xpath('(//div[4]/ol/li/a)[1]').text     #//ol[1]/li/a)[1]
-	file.puts "{value: " + "'" + character + "'" + ", " + "pinyin: " + "'" + pinyin + "'" + ", " + "definition: " + "'" + definition + "'" + "}"
+	pinyin = ""
+	while (doc3.xpath('(//tt/span/a)[' + counterPinyin.to_s + ']').text != "")	
+		pinyin = pinyin + doc3.xpath('(//tt/span/a)[' + counterPinyin.to_s + ']').text + ","
+		counterPinyin = counterPinyin + 1
+	end
+	
+	definition =  doc3.xpath('(//ol[1]/li)[1]').text     #//ol[1]/li/a)[1]
+	file.puts "{value: " + "'" + character + "'" + ", " + "pinyin: " + "'" + pinyin[0..(pinyin.length-2)] + "'" + ", " + "definition: " + "\"" + definition + "\"" + "}"
 	file.print ","
 	counter = counter + 1
 end 
