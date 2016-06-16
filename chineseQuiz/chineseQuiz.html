@@ -12,7 +12,7 @@
 		}
 		
 		#body{
-		margin-top: 8%;
+		margin-top: 3%;
 		}
 		
 	</style>
@@ -46,6 +46,16 @@
 		<option>pinyin</option>
 		<option>definition</option>
 	</select>
+	</div>
+	
+	<div>
+	<br>
+	<button id="showCharacter" onclick="showCharacter()">show pinyin and definition</button>
+	</div>
+	
+	<div id='showChar'>
+		<p id='pinyin'></p>
+		<p id='definition'></p>
 	</div>
 	
 	</div> <!-- end div body -->
@@ -104,6 +114,16 @@ function evaluateAnswer(){
 	}
 }
 
+function showCharacter(){
+
+var pinyin = document.getElementById('pinyin');
+pinyin.textContent = "pinyin: " + theChar.pinyin;
+
+var definition = document.getElementById('definition');
+definition.textContent = "definition: " + theChar.definition;
+
+}
+
 function play(){
 	//clear question
 	question.textContent = "";
@@ -114,6 +134,7 @@ function play(){
 pickRandomChar();
 
 </script>
+
 
 
 </html>
