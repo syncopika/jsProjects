@@ -1,5 +1,5 @@
 # canvas_game_experiment    
-<sub>-started ~03/21/16</sub>    
+<sub>started ~03/21/16</sub>    
 -unfortunately it needs to be hosted on a local server to work, but you can do it with Python. (python -m http.server)    
 -has collision detection by color.   
 <img src="https://41.media.tumblr.com/42043e01b8a2eddc9b49202673e8ccde/tumblr_o5qmm1AOMp1rtokg8o1_540.png"</img>    
