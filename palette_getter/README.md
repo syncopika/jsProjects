@@ -4,4 +4,6 @@
 <hr>
 try it out here: http://syncopika.tumblr.com/paletteGetter    
 <hr>
-have fun!
+have fun!    
+    
+started on 03/13/16
