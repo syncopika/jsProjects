@@ -22,8 +22,8 @@ text-align: center;
 <body>
 <div class='container'>
 	<div class='row'>
-		<h1>picture comparer<h1>
-		<p>description</p>
+		<h1>picture comparer</h1>
+		<p>after importing pictures, click anywhere on either of the pictures to get the color and position!</p>
 	</div>
 	
 	<hr>
@@ -34,6 +34,7 @@ text-align: center;
 		<canvas id='canvas1'  class='canvas' height='600' width='600'></canvas>
 		<button id='importImage1' class='btn' onclick='openFile(handleFile);'>import image</button>
 		<input id="fileInput" style="display:none;" type="file">
+		<hr>
 		<p class='position'>position here</p>
 		<h2 id='colorID1'>color goes here</h2>
 		</div>
@@ -45,6 +46,7 @@ text-align: center;
 		<canvas id='canvas2' class='canvas' height='600' width='600'></canvas>
 		<button id='importImage2' class='btn' onclick='openFile(handleFile);'>import image</button>
 		<input id="fileInput" style="display:none;" type="file">
+		<hr>
 		<p class='position'>position here</p>
 		<h2 id='colorID2'>color goes here</h2>
 		</div>
@@ -190,8 +192,6 @@ function clearCanvas(){
 	context1.clearRect(0, 0, 600, 600);
 	context2.clearRect(0, 0, 600, 600);
 };
-
-
 
 
 </script>
