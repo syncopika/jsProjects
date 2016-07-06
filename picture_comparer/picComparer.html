@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>compare pictures</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+</head>
+
+<style>
+canvas{
+border: 1px solid black;
+}
+#footer{
+margin-top:3%;
+height: 100px;
+text-align: center;
+}
+</style>
+
+<body>
+<div class='container'>
+	<div class='row'>
+		<h1>picture comparer<h1>
+		<p>description</p>
+	</div>
+	
+	<hr>
+	
+	<div class='row'>
+	
+		<div class='col-lg-5'>
+		<canvas id='canvas1'  class='canvas' height='600' width='600'></canvas>
+		<button id='importImage1' class='btn' onclick='openFile(handleFile);'>import image</button>
+		<input id="fileInput" style="display:none;" type="file">
+		<p class='position'>position here</p>
+		<h2 id='colorID1'>color goes here</h2>
+		</div>
+		
+		<div class='col-lg-2'>
+		</div>
+		
+		<div class='col-lg-5'>
+		<canvas id='canvas2' class='canvas' height='600' width='600'></canvas>
+		<button id='importImage2' class='btn' onclick='openFile(handleFile);'>import image</button>
+		<input id="fileInput" style="display:none;" type="file">
+		<p class='position'>position here</p>
+		<h2 id='colorID2'>color goes here</h2>
+		</div>
+	
+	</div>
+	
+	<div class='row' id='footer'>
+		<button id='clearCanvas' class='btn' onclick='clearCanvas()'>clear</button>
+	</div>
+
+</div><!-- end container-->
+
+<script>
+
+var canvas1 = document.getElementById('canvas1');
+var context1 = canvas1.getContext("2d");
+var canvas2 = document.getElementById('canvas2');
+var context2 = canvas2.getContext("2d");
+var flag;
+
+context1.fillStyle = "#FFFFFF";
+context2.fillStyle = "#FFFFFF";
+
+
+
+$('#importImage1').click(function(){
+	flag = 'importImage1';
+});
+
+$('#importImage2').click(function(){
+	flag = 'importImage2';
+});
+
+
+//if user clicks on any canvas (1 or 2)
+var x, y;
+var clickFlag;
+
+canvas1.onclick = function(){
+	clickFlag = 1;
+}
+
+canvas2.onclick = function(){
+	clickFlag = 2;
+}
+
+function getColor(event){
+	
+	var rect;
+	
+	if(clickFlag === 1){
+	rect = canvas1.getBoundingClientRect();
+	}else{
+	rect = canvas2.getBoundingClientRect();
+	}
+	
+	x = event.clientX - rect.left;
+	y = event.clientY - rect.top;
+	
+	var pixel1 = context1.getImageData(x, y, 1, 1);
+	var data1 = pixel1.data;
+	var rgba1 = 'rgba(' + data1[0] + ',' + data1[1] + ',' + data1[2] + ',' + data1[3] + ')';
+	
+	var pixel2 = context2.getImageData(x, y, 1, 1);
+	var data2 = pixel2.data;
+	var rgba2 = 'rgba(' + data2[0] + ',' + data2[1] + ',' + data2[2] + ',' + data2[3] + ')';
+	
+	//position is an HTMLCollection, which means it's like an array. access the elements like so below
+	var position = document.getElementsByClassName('position');
+	Array.prototype.forEach.call(position, function(element){
+	
+		element.textContent = 'x: ' + x + ', y: ' + y;
+	
+	});
+	
+	
+	var colorId1 = document.getElementById('colorID1');
+	colorId1.textContent = rgba1;
+	$('#colorID1').css('background-color',rgba1);
+	
+	var colorId2 = document.getElementById('colorID2');
+	colorId2.textContent = rgba2;
+	$('#colorID2').css('background-color',rgba2);
+}
+
+canvas1.addEventListener("click", getColor);
+canvas2.addEventListener("click", getColor);
+
+
+//****************** IMPORT IMAGE CODE ***********************
+var img = new Image();
+var openFile = (function(){
+return function(c){
+	var fileInput = document.querySelector("#fileInput");
+
+	function onFileChange(e){
+	var files = e.target.files;
+	if(files && files.length>0) //if a file has been selected
+	   c(files)//do some function (defined by c) to that file
+	}
+	fileInput.addEventListener("change", onFileChange, false);
+	fileInput.click(); 
+}
+})();
+
+
+function handleFile(files){
+var file = files[0];
+var imageType = /image.*/;
+if(!file.type.match(imageType)){
+	return;
+}
+
+var reader = new FileReader();
+
+reader.onerror = function(e){
+alert('Error code ' + e.target.error);
+}
+
+
+reader.onload = (function(file){  
+	return function(evt){
+		img.src = evt.target.result;
+	}
+})(file); 
+
+reader.readAsDataURL(file);
+
+img.onload = function(){
+if(flag === 'importImage1'){
+context1.drawImage(img, 0, 0, 600, 600);
+}else{
+context2.drawImage(img, 0, 0, 600, 600);
+}  
+document.querySelector("#fileInput").value = null;
+}
+}
+
+//************************************************
+
+//clear image and image data (i.e. colors)
+function clearCanvas(){
+	context1.clearRect(0, 0, 600, 600);
+	context2.clearRect(0, 0, 600, 600);
+};
+
+
+
+
+</script>
+
+</body>
+</html>
