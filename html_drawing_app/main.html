@@ -17,15 +17,15 @@ var curCanvas = layerArray[curPage];
 <style>
 
 #header{
-text-align:center;
+text-align: center;
 }
 
 #rightCol{
 margin-top: -2%;
-text-align:center;
+text-align: center;
 }
 
-@media screen and (max-width: 960px){
+@media screen and (max-width: 1080px){
 #rightCol{
 margin-top: 0%;
 }
@@ -34,8 +34,8 @@ margin-top: 0%;
 #toolbar{
 margin: 10px auto;
 border: black 1px solid;
-padding:2px;
-text-align:center;
+padding: 2px;
+text-align: center;
 margin-bottom: 5%;
 }
 
@@ -50,7 +50,7 @@ border: 1px black solid;
 }
 
 li{
-display:inline-block;
+display: inline-block;
 }
 
 #picture{
@@ -116,7 +116,7 @@ margin-bottom: 5px;
 	<h1>animation/drawing app</h1>
 	<p>link to source code</p>
 	<button id='toggleToolbar' class='btn' onclick='toggleToolbar()'> toggle toolbar </button>
-	
+
 		<ul>
 			<li id='down'><h2><=</h2></li>
 			<li><h2 id='count'></h2></li>
@@ -125,17 +125,16 @@ margin-bottom: 5px;
 
 </div>
 
-
 <div class='row'>		
 					
-	<div class='col-md-6 col-lg-6 col-lg-offset-3 col-md-offset-3'>
+	<div class='col-md-6 col-lg-6 col-lg-offset-3 col-md-offset-3 col-sm-6 col-sm-offset-3'>
 		<div id='picture'>
 			<canvas id="canvas0" width='700' height='700' class='canvas'></canvas> 
 		</div>
 	</div>
 	
 	<!-- TOOLBAR -->
-	<div id='rightCol' class='col-md-3 col-lg-3' style='border: black solid 1px'>
+	<div id='rightCol' class='col-sm-3 col-md-3 col-lg-3' style='border: black solid 1px'>
 
 		<h2>toolbar</h2>
 		<p>tips:</p>
@@ -154,9 +153,25 @@ margin-bottom: 5px;
 					<p>change brush size</p>
 					<input class='brushSize' type='range' min='.5' max='15' step='.5' value='5'>
 					<span id='brushSizeValue'> 5.0 </span>
+					
+					<!-- for adjusting contrast -->
+					<br>
+					<p>contrast</p>
+							<p>
+						<span><button class='btn' id='incContrast' onclick='filterCanvas(inContrast)'>increase</button></span>
+						<span>&nbsp;</span>
+						<span><button class='btn' id='decContrast' onclick='filterCanvas(deContrast)'>decrease</button></span>
+					</p>
+					
+					<!-- for adjusting brightness -->
+					<p>brightness</p>
+					<p>
+						<span><button class='btn' id='incBrightness' onclick='filterCanvas(incBright)'>increase</button></span>
+						<span>&nbsp;</span>
+						<span><button class='btn' id='decBrightness' onclick='filterCanvas(decBright)'>decrease</button></span>
+					</p>
 			</div>
 			
-	
 	 <div id='filters' class="dropdown">
 		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 			filters <span class="caret"></span>
@@ -189,7 +204,7 @@ margin-bottom: 5px;
 			</div>
 		
 		
-		</div> <!--end toolbar (right col) -->
+	</div> <!--end toolbar (right col) -->
  
 </div> <!-- end row-->
 
@@ -249,6 +264,14 @@ curSize = brushSize.value;
 $('#brushSizeValue').html(brushSize.value);
 }
 
+
+//prevent dropdown from closing after one click
+$('.dropdown-menu > li').click(function(e){
+e.stopPropagation();
+})
+
+
+
 //stuff for the page-count thing at the top
 var page = 0;
 $('#count').html(curPage);//make sure 0 shows up when page loads
@@ -268,8 +291,6 @@ if(!showToolbar){
 	showToolbar = false;
 }
 }
-
-
 
 
 //these gigantic objects will store all the pixel data for each canvas!
@@ -685,6 +706,5 @@ draw();
 </script>
 
 </body>
-
 
 </html>
