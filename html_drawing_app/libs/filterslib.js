@@ -57,6 +57,8 @@ img.onload = function(){
 context.drawImage(img, 0, 0, 700, 700); //figure out how to get canvas.height here to work..?
 //ah! reset the value for the HTML input file thing so that you can use the same pic for consecutive frames!  
 document.querySelector("#fileInput").value = null;
+//reset contrast value every time a new pic is imported
+contrastVal = 0;
 }
 }
 
@@ -227,7 +229,7 @@ function scary(pixels){
 
 function heatwave(pixels){
 	var d = pixels.data;
-	for(i=0;i<d.length;i++){
+	for(var i=0; i < d.length; i++){
 		var r = d[i];
 		var g = d[i+1];
 		var b = d[i+2];
@@ -237,6 +239,204 @@ function heatwave(pixels){
 		if(r < 100){
 			d[i] = d[i]*2;
 		}
+	}
+	return pixels;
+}
+
+function randomize(pixels){
+	var d = pixels.data;
+	
+	for(var i=0; i < d.length; i+=4){
+		
+		var rand = Math.floor(Math.random()*5 + 1); //random from 1 to 5
+		
+		var r = d[i];
+		var g = d[i+1];
+		var b = d[i+2];
+		var a = d[i+3];
+		
+		//if there is a pixel that is not white (not 255,255,255)
+		if(r !== 255 || g !== 255 || b !== 255){
+			//then move the pixel in a random direction (up, down, left, or right)
+			//depending on the random number
+			//1 = up, 2 = down, 3 = left, 4 = right, 5 = no movement
+			switch(rand){
+				case 1: 
+					if(i <= 2400){
+						//move down
+						d[i+2400] = r;
+						d[i+2401] = g;
+						d[i+2402] = b;
+						d[i+2403] = a;
+					} else {
+						d[i-2403] = r;
+						d[i-2402] = g;
+						d[i-2401] = b;
+						d[i-2400] = a;
+					}
+					break;
+				case 2:
+					//move down 
+					d[i+2400] = r;
+					d[i+2401] = g;
+					d[i+2402] = b;
+					d[i+2403] = a;
+					break;
+				case 3:
+				    d[i-4] = r;
+					d[i-3] = g;
+					d[i-2] = b;
+					d[i-1] = a;
+					break;
+				case 4:
+					d[i+4] = r;
+					d[i+5] = g;
+					d[i+6] = b;
+					d[i+7] = a;
+					break;
+				case 5:
+					//do nothing
+					break;
+			}
+		}
+	}
+	return pixels;
+}
+
+//inversion
+function invert(pixels){
+	
+	var d = pixels.data;
+	var r,g,b,x,y,z;
+	
+	for(var i = 0; i < d.length; i+=4){
+		
+		r = d[i];
+		g = d[i+1];
+		b = d[i+2];
+		
+		d[i] = 255 - r;
+		d[i+1] = 255 - g;
+		d[i+2] = 255 - b;
+		
+	}
+
+	return pixels;
+}
+
+
+//blurrrrrrrrrrrr
+function blurry(pixels){
+
+var d = pixels.data;
+
+for(i = 0; i < d.length; i+=4){
+		
+		//if these conditions are not undefined, then that pixel must exist.
+		//right pixel (check if 4 pixel radius ok)
+		var cond1 = (d[i+4] == undefined);
+		//left pixel
+		var cond2 = (d[i-4] == undefined);
+		//pixel below
+		var cond3 = (d[i+2800] == undefined);
+		//pixel above
+		var cond4 = (d[i-2800] == undefined);
+		
+		if(!cond1 && !cond2 && !cond3 && !cond4){
+		
+			var newR = (d[i+4]*.2 + d[i-4]*.2 + d[i+2800]*.2 + d[i-2800]*.2 + d[i]*.2);
+			var newG = (d[i+5]*.2 + d[i-3]*.2 + d[i+2801]*.2 + d[i-2799]*.2 + d[i+1]*.2);
+			var newB = (d[i+6]*.2 + d[i-2]*.2 + d[i+2802]*.2 + d[i-2798]*.2 + d[i+2]*.2);
+			var newA = (d[i+7]*.2 + d[i-1]*.2 + d[i+2803]*.2 + d[i-2797]*.2 + d[i+3]*.2);
+		
+			d[i] = newR;
+			d[i+1] = newG;
+			d[i+2] = newB;
+			d[i+3] = newA;
+		}
+}
+return pixels;
+}
+
+
+//control brightness
+function incBright(pixels){
+	
+	var d = pixels.data;
+	
+	for(var i = 0; i < d.length; i+=4){
+			
+			d[i] += 5;
+			d[i+1] += 5;
+			d[i+2] += 5;
+			//d[i+3] += 5;
+	}
+	
+	return pixels;
+	
+}
+
+function decBright(pixels){
+	
+	var d = pixels.data;
+	
+	for(var i = 0; i < d.length; i+=4){
+			
+			d[i] -= 5;
+			d[i+1] -= 5;
+			d[i+2] -= 5;
+			//d[i+3] -= 5;
+	}
+	
+	return pixels;
+}
+
+//change contrast
+//set range -128 to 128 for now
+var contrastVal = 0;
+
+function inContrast(pixels){
+	
+	var d = pixels.data;
+	
+	//var contrastFactor = (259*(contrastValue + 255)) / (255*(259 - contrastValue));
+	
+	if(contrastVal < 128){
+		contrastVal++;
+	}
+	
+	var contrastFactor = Math.max( ((128 + contrastVal) / 128), 0 )
+		
+	for(var i = 0; i < d.length; i+=4){		
+		
+		d[i] = d[i]*contrastFactor;
+		d[i+1] = d[i+1]*contrastFactor;
+		d[i+2] = d[i+2]*contrastFactor;
+		d[i+3] = d[i+3]*contrastFactor;
+			
+	}
+	return pixels;
+}
+
+function deContrast(pixels){
+	
+	var d = pixels.data;
+	
+	//var contrastFactor = (259*(contrastValue + 255)) / (255*(259 - contrastValue));
+	
+	if(contrastVal > -128){
+		contrastVal--;
+	}
+	
+	var contrastFactor = Math.max( ((128 + contrastVal) / 128), 0 )
+		
+	for(var i = 0; i < d.length; i+=4){		
+		
+		d[i] = d[i]*contrastFactor;
+		d[i+1] = d[i+1]*contrastFactor;
+		d[i+2] = d[i+2]*contrastFactor;
+		d[i+3] = d[i+3]*contrastFactor;
+			
 	}
 	return pixels;
 }
