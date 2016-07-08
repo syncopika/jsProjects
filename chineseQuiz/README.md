@@ -37,7 +37,7 @@ var characters = [
 ```    
 my next step is to convert the pinyin to something more simple, i.e. "gǔn" should be converted to "gun3".    
 I also want to figure out how to include multiple definitions and different pinyin.     
-<b>updated output!</b> 
+<b>updated output!</b> I intended to capture also the traditional form of some characters, but it looks like it's not working too well yet.
 ```
 var characters = [
 
