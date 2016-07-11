@@ -1,5 +1,5 @@
 //data provided by Wiktionary (https://en.wiktionary.org/wiki/) under Creative Commons Attribution-ShareAlike 3.0. 
-//and also from chinese-tools.com. thank you Wiktionary and chinese-tools! :D
+//and also from chinese-tools.com (http://www.chinese-tools.com/tools/). thank you Wiktionary and chinese-tools! :D
 
 var characters = [
 
