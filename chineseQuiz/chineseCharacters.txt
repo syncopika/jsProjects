@@ -1,4 +1,6 @@
-//data provided by Wiktionary (https://en.wiktionary.org/wiki/) under Creative Commons Attribution-ShareAlike 3.0. thank you Wiktionary! :D
+//data provided by Wiktionary (https://en.wiktionary.org/wiki/) under Creative Commons Attribution-ShareAlike 3.0. 
+//and also from chinese-tools.com. thank you Wiktionary and chinese-tools! :D
+
 var characters = [
 
 //1 STROKE RADICAL CHARACTERS
