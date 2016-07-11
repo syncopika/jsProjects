@@ -5,13 +5,88 @@ require "openssl"
 require "open_uri_redirections"
 require "nokogiri"
 
+
+#pinyin converter
+
+def pinyin_convert(pinyin)
+	convertedPinyin = ""
+		if (pinyin.index('ù') != nil)
+			pinyin.gsub!('ù', 'u')
+			convertedPinyin = pinyin + '4'
+		elsif (pinyin.index('ǔ') != nil)          
+			pinyin.gsub!('ǔ', 'u')
+			convertedPinyin = pinyin + '3'
+		elsif (pinyin.index('ú') != nil)
+			pinyin.gsub!('ú', 'u')
+			convertedPinyin = pinyin + '2'
+		elsif (pinyin.index('ū') != nil)
+			pinyin.gsub!('ū', 'u')
+			convertedPinyin = pinyin + '1'
+		#a
+		elsif (pinyin.index('à') != nil)
+			pinyin.gsub!('à', 'a')
+			convertedPinyin = pinyin + '4'
+		elsif (pinyin.index('ǎ') != nil)
+			pinyin.gsub!('ǎ', 'a')
+			convertedPinyin = pinyin + '3'
+		elsif (pinyin.index('á') != nil)
+			pinyin.gsub!('á', 'a')
+			convertedPinyin = pinyin + '2'
+		elsif (pinyin.index('ā') != nil)
+			pinyin.gsub!('ā', 'a')
+			convertedPinyin = pinyin + '1'
+		#e
+		elsif (pinyin.index('è') != nil)
+			pinyin.gsub!('è', 'e')
+			convertedPinyin = pinyin + '4'
+		elsif (pinyin.index('ě') != nil)
+			pinyin.gsub!('ě', 'e')
+			convertedPinyin = pinyin + '3'
+		elsif (pinyin.index('é') != nil)
+			pinyin.gsub!('é', 'e')
+			convertedPinyin = pinyin + '2'
+		elsif (pinyin.index('ē') != nil)
+			pinyin.gsub!('ē', 'e')
+			convertedPinyin = pinyin + '1'
+		#i
+		elsif (pinyin.index('ì') != nil)
+			pinyin.gsub!('ì', 'i')
+			convertedPinyin = pinyin + '4'
+		elsif (pinyin.index('ǐ') != nil)
+			pinyin.gsub!('ǐ', 'i')
+			convertedPinyin = pinyin + '3'
+		elsif (pinyin.index('í') != nil)
+			pinyin.gsub!('í', 'i')
+			convertedPinyin = pinyin + '2'
+		elsif (pinyin.index('ī') != nil)
+			pinyin.gsub!('ī', 'i')
+			convertedPinyin = pinyin + '1'	 
+		#o
+		elsif (pinyin.index('ò') != nil)
+			pinyin.gsub!('ò', 'o')
+			convertedPinyin = pinyin + '4'
+		elsif (pinyin.index('ǒ') != nil)
+			pinyin.gsub!('ǒ', 'o')
+			convertedPinyin = pinyin + '3'
+		elsif (pinyin.index('ó') != nil)
+			pinyin.gsub!('ó', 'o')
+			convertedPinyin = pinyin + '2'
+		elsif (pinyin.index('ō') != nil)
+			pinyin.gsub!('ō', 'o')
+			convertedPinyin = pinyin + '1'
+		#assuming there are no unicode chars. in the pinyin, which could happen occasionally
+		else
+			convertedPinyin = pinyin
+	end
+	return convertedPinyin
+end
+
+
+#use chinese-tools to find characters, use wiktionary to get definition
 base_url1 = 'http://www.chinese-tools.com/tools/sinograms.html?r='
 base_url2 = 'https://en.wiktionary.org/wiki/'
 
 doc1 = Nokogiri::HTML(open(base_url1))
-
-#change ul (i.e. to ul[2]) to access the other radicals depending on stroke counts
-#the index outside the parentheses indicates which radical in the n-stroke group is specified 
 
 newfile = "test.js"
 file = File.open(newfile, "w")
@@ -19,9 +94,12 @@ file = File.open(newfile, "w")
 file.puts "//data provided by Wiktionary (https://en.wiktionary.org/wiki/) under Creative Commons Attribution-ShareAlike 3.0. thank you Wiktionary! :D"
 file.puts "var characters = ["
 
-for i in 1..8 do
+#don't forget to change the range of 'i' appropriately to get the actual characters
+for i in 13..13 do
 
-radical = doc1.xpath('(//td/div[3]/div[2]/ul[1]/li/a)[' + i.to_s + ']').text
+#change ul (i.e. to ul[2]) to access the other radicals depending on stroke counts
+#the index outside the parentheses indicates which radical in the n-stroke group is specified 
+radical = doc1.xpath('(//td/div[3]/div[2]/ul[2]/li/a)[' + i.to_s + ']').text
 
 #puts URI.escape(base_url1 + radical)
 
@@ -41,88 +119,46 @@ while (doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text != 
 	counterPinyin = 1
 	character = doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text
     
+	#for wiktionary
 	newURL = URI.escape(base_url2 + character)
 	doc3 = Nokogiri::HTML(open(newURL, :allow_redirections => :all, :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE))
 	
+=begin
+	#not working too well because some characters are simplified versions of other characters, but they themselves have different meanings -__-
+
 	#what if the character has an alternative version/traditional version?
 	if (doc3.xpath('(//div/b/a)[1]').text != "")
 	character = character + ";" + doc3.xpath('(//div/b/a)[1]').text
 	end
+=end
+
+	#if character has a SIMPLIFIED version, please include it also
+	base_url3 = 'http://www.chinese-tools.com/tools/sinograms.html?q='
+	newURL2 = URI.escape(base_url3 + character)
+	doc4 = Nokogiri::HTML(open(newURL2))
+	if (doc4.xpath('(//div[2]/div[1]/div[2]/div[3]/div)[1]').text == "Simplified")
+		character = character + ";" + doc4.xpath('(//div[2]/div[1]/div[2]/div[3]/div)[2]').text
+	end
 	
 	pinyin = ""
-	while (doc3.xpath('(//tt/span/a)[' + counterPinyin.to_s + ']').text != "")	
-		
-		#fix pinyin here (i.e. ǔ => u3)
-		pinyinCheck = doc3.xpath('(//tt/span/a)[' + counterPinyin.to_s + ']').text
-		
-		if (pinyinCheck.index('ù') != nil)
-			pinyinCheck.gsub!('ù', 'u')
-			pinyinCheck = pinyinCheck += '4'
-		elsif (pinyinCheck.index('ǔ') != nil)          
-			pinyinCheck.gsub!('ǔ', 'u')
-			pinyinCheck = pinyinCheck += '3'
-		elsif (pinyinCheck.index('ú') != nil)
-			pinyinCheck.gsub!('ú', 'u')
-			pinyinCheck = pinyinCheck += '2'
-		elsif (pinyinCheck.index('ū') != nil)
-			pinyinCheck.gsub!('ū', 'u')
-			pinyinCheck = pinyinCheck += '1'
-		#a
-		elsif (pinyinCheck.index('à') != nil)
-			pinyinCheck.gsub!('à', 'a')
-			pinyinCheck = pinyinCheck + '4'
-		elsif (pinyinCheck.index('ǎ') != nil)
-			pinyinCheck.gsub!('ǎ', 'a')
-			pinyinCheck = pinyinCheck + '3'
-		elsif (pinyinCheck.index('á') != nil)
-			pinyinCheck.gsub!('á', 'a')
-			pinyinCheck = pinyinCheck + '2'
-		elsif (pinyinCheck.index('ā') != nil)
-			pinyinCheck.gsub!('ā', 'a')
-			pinyinCheck = pinyinCheck + '1'
-		#e
-		elsif (pinyinCheck.index('è') != nil)
-			pinyinCheck.gsub!('è', 'e')
-			pinyinCheck = pinyinCheck + '4'
-		elsif (pinyinCheck.index('ě') != nil)
-			pinyinCheck.gsub!('ě', 'e')
-			pinyinCheck = pinyinCheck + '3'
-		elsif (pinyinCheck.index('é') != nil)
-			pinyinCheck.gsub!('é', 'e')
-			pinyinCheck = pinyinCheck + '2'
-		elsif (pinyinCheck.index('ē') != nil)
-			pinyinCheck.gsub!('ē', 'e')
-			pinyinCheck = pinyinCheck + '1'
-		#i
-		elsif (pinyinCheck.index('ì') != nil)
-			pinyinCheck.gsub!('ì', 'i')
-			pinyinCheck = pinyinCheck + '4'
-		elsif (pinyinCheck.index('ǐ') != nil)
-			pinyinCheck.gsub!('ǐ', 'i')
-			pinyinCheck = pinyinCheck + '3'
-		elsif (pinyinCheck.index('í') != nil)
-			pinyinCheck.gsub!('í', 'i')
-			pinyinCheck = pinyinCheck + '2'
-		elsif (pinyinCheck.index('ī') != nil)
-			pinyinCheck.gsub!('ī', 'i')
-			pinyinCheck = pinyinCheck + '1'	 
-		#o
-		elsif (pinyinCheck.index('ò') != nil)
-			pinyinCheck.gsub!('ò', 'o')
-			pinyinCheck = pinyinCheck + '4'
-		elsif (pinyinCheck.index('ǒ') != nil)
-			pinyinCheck.gsub!('ǒ', 'o')
-			pinyinCheck = pinyinCheck + '3'
-		elsif (pinyinCheck.index('ó') != nil)
-			pinyinCheck.gsub!('ó', 'o')
-			pinyinCheck = pinyinCheck + '2'
-		elsif (pinyinCheck.index('ō') != nil)
-			pinyinCheck.gsub!('ō', 'o')
-			pinyinCheck = pinyinCheck + '1'	
-			
+	
+	#sometimes, wiktionary does not explicitly provide a pinyin (but provides a redirect to another variant character with the same pinyin -__-) so in cases like that, get the pinyin from the chinese-tools page
+	altPinyinCounter = 1
+	if (doc3.xpath('(//tt/span/a)[1]').text == "")
+		#if wiktionary pinyin is not present, use chinese-tools
+		while (doc4.xpath('(//div[2]/div[' + altPinyinCounter.to_s + ']/div[1]/span)[2]').text != "")
+			altPinyin = doc4.xpath('(//div[2]/div[' + altPinyinCounter.to_s + ']/div[1]/span)[2]').text
+			pinyin = pinyin + pinyin_convert(altPinyin) + ","
+			altPinyinCounter = altPinyinCounter + 1
 		end
-		
-		pinyin = pinyin + pinyinCheck + "," #doc3.xpath('(//tt/span/a)[' + counterPinyin.to_s + ']').text
+		#strip off trailing commas
+		pinyin = pinyin[0..(pinyin.length-1)]
+	end
+	
+	while (doc3.xpath('(//tt/span/a)[' + counterPinyin.to_s + ']').text != "")	
+		#fix pinyin here (i.e. ǔ => u3)
+		pinyin2 = doc3.xpath('(//tt/span/a)[' + counterPinyin.to_s + ']').text
+		pinyin = pinyin + pinyin_convert(pinyin2) + "," #doc3.xpath('(//tt/span/a)[' + counterPinyin.to_s + ']').text
 		counterPinyin = counterPinyin + 1
 	end
 	
@@ -137,7 +173,8 @@ while (doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text != 
 	#remove line breaks
 	addDefinition.gsub!("\n", "")
 	
-	#revise definition to exclude quotations
+	#revise definition to exclude quotations/excess stuff. 
+	#try to avoid as many chinese characters, if any, in the definition as possible
 	hasCharacter = "";
 	
 	addDefinition.each_char{ |c|
@@ -153,7 +190,17 @@ while (doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text != 
 	addDefinition = addDefinition[0..stop-1]
 	end
 	
+	#some definitions have a dagger ("†") in front. ignore them here.
+	if addDefinition[0] == '†'
+		addDefinition = addDefinition[1..(addDefinition.length-1)]
+	end 
+	
+	#lastly, some definitions might be blank, which are concatenated to definition and semi-colons get stacked.
+	#prevent that here	
+	if addDefinition != ""
 	definition = definition + addDefinition + ";"     #//ol[1]/li/a)[1]
+	end
+	
 	definitionCounter = definitionCounter + 1
 	end
 	
