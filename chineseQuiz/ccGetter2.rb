@@ -91,11 +91,11 @@ doc1 = Nokogiri::HTML(open(base_url1))
 newfile = "test.js"
 file = File.open(newfile, "w")
 
-file.puts "//data provided by Wiktionary (https://en.wiktionary.org/wiki/) under Creative Commons Attribution-ShareAlike 3.0. thank you Wiktionary! :D"
+file.puts "//data provided by Wiktionary (https://en.wiktionary.org/wiki/) under Creative Commons Attribution-ShareAlike 3.0. some pinyin provided by chinese-tools. thanks to chinese-tools and wiktionary!"
 file.puts "var characters = ["
 
 #don't forget to change the range of 'i' appropriately to get the actual characters
-for i in 13..13 do
+for i in 14..21 do
 
 #change ul (i.e. to ul[2]) to access the other radicals depending on stroke counts
 #the index outside the parentheses indicates which radical in the n-stroke group is specified 
@@ -167,7 +167,7 @@ while (doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text != 
 	#for definition, ignore child elements (i.e. if there are quotations for a definition)
 	#collect multiple definitions
 	definitionCounter = 1
-	while (doc3.xpath('(//ol[1]/li)[' + definitionCounter.to_s + ']').text != "")
+	while (doc3.xpath('(//ol[1]/li)[' + definitionCounter.to_s + ']').text != "" || doc3.xpath('(//ol[1]/li)[' + definitionCounter.to_s + ']').text != "This entry needs a definition. Please add one, then remove {{defn}}.")
 	addDefinition = doc3.xpath('(//div[4]/ol[1]/li)[' + definitionCounter.to_s + ']').text
 	
 	#remove line breaks
@@ -178,6 +178,7 @@ while (doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text != 
 	hasCharacter = "";
 	
 	addDefinition.each_char{ |c|
+		#char.ord == 40 is for left parentheses
 		if ((c.ord >= 19968 && c.ord <= 40959) || (c.ord == 40))
 			hasCharacter = c
 			break
@@ -191,6 +192,7 @@ while (doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text != 
 	end
 	
 	#some definitions have a dagger ("†") in front. ignore them here.
+	#EDIT: it actually indicates an obsolete definition. oh well. 
 	if addDefinition[0] == '†'
 		addDefinition = addDefinition[1..(addDefinition.length-1)]
 	end 
