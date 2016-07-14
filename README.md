@@ -1,5 +1,5 @@
-# javascriptProjects    
-various projects involving Javascript
+# javascript projects with HTML and CSS    
+various web-based projects involving Javascript
 <hr>    
   
   
