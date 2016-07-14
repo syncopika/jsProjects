@@ -36,7 +36,7 @@ text-align: center;
 		<input id="fileInput" style="display:none;" type="file">
 		<hr>
 		<p class='position'>position here</p>
-		<h2 id='colorID1'>color goes here</h2>
+		<h2 id='colorID1' class='bgColor'>color goes here</h2>
 		</div>
 		
 		<div class='col-lg-2'>
@@ -48,7 +48,7 @@ text-align: center;
 		<input id="fileInput" style="display:none;" type="file">
 		<hr>
 		<p class='position'>position here</p>
-		<h2 id='colorID2'>color goes here</h2>
+		<h2 id='colorID2' class='bgColor'>color goes here</h2>
 		</div>
 	
 	</div>
@@ -70,8 +70,6 @@ var flag;
 context1.fillStyle = "#FFFFFF";
 context2.fillStyle = "#FFFFFF";
 
-
-
 $('#importImage1').click(function(){
 	flag = 'importImage1';
 });
@@ -92,6 +90,19 @@ canvas1.onclick = function(){
 canvas2.onclick = function(){
 	clickFlag = 2;
 }
+
+
+//isDark accepts a string like "rgba(...)" and determines if it is a "dark" color.
+//isDark returns a boolean
+function isDark(rgbColor){
+
+var rgbColor = rgbColor.substring(5,rgbColor.length-1);
+rgbColor = rgbColor.split(',');
+console.log(rgbColor);
+
+return rgbColor.some(function(el){return parseInt(el) < 100});
+}
+
 
 function getColor(event){
 	
@@ -122,6 +133,20 @@ function getColor(event){
 	
 	});
 	
+	//if background color is DARK (i.e. either r,g, or b is < 100), make text WHITE
+	if(isDark(rgba1)){
+		$('#colorID1').css('color', '#FFFFFF');
+		$('#colorID2').css('color', '#000000');
+	}else if(isDark(rgba2)){
+		$('#colorID1').css('color', '#000000');
+		$('#colorID2').css('color', '#FFFFFF');
+	}else if(isDark(rgba1) && isDark(rgba2)){
+		$('#colorID1').css('color', '#FFFFFF');
+		$('#colorID2').css('color', '#FFFFFF');
+	}else{
+		$('#colorID1').css('color', '#000000');
+		$('#colorID2').css('color', '#000000');
+	}
 	
 	var colorId1 = document.getElementById('colorID1');
 	colorId1.textContent = rgba1;
@@ -192,7 +217,6 @@ function clearCanvas(){
 	context1.clearRect(0, 0, 600, 600);
 	context2.clearRect(0, 0, 600, 600);
 };
-
 
 </script>
 
