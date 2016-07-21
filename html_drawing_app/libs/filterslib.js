@@ -393,6 +393,8 @@ function decBright(pixels){
 
 //change contrast
 //set range -128 to 128 for now
+//I don't think it's working quite right...
+//basically, all dark colors should get darker, and light colors should get lighter right?
 var contrastVal = 0;
 
 function inContrast(pixels){
