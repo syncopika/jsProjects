@@ -220,7 +220,6 @@ margin-bottom: 5px;
 <script> 
 //check this out! http://perfectionkills.com/exploring-canvas-drawing-techniques/
 
-
 //temp arrays store pixel data for current canvas. if you switch frames, these arrays clear.  
 var clickX = [];
 var clickY = [];
@@ -237,7 +236,6 @@ clickColor = [];
 clickSize = [];
 }
 
-
 function addClick(x, y, dragging){
 clickX.push(x);
 clickY.push(y);
@@ -245,7 +243,6 @@ clickDrag.push(dragging);
 clickColor.push(curColor);
 clickSize.push(curSize);
 }
-
 
 //ok new approach. canvasData will store pixel data via getImageData() for each canvas. the new thing is that canvasData will only hold the 10 MOST RECENT changes to each canvas. 
 //here's how it works: every time user finishes drawing a line, i.e. upon MOUSEUP, get image data for the current canvas and store it in AN ARRAY that corresponds to the right canvas in canvasData.
@@ -257,7 +254,6 @@ var undoCounter;
 
 //undo function!! 
 //get this to work properly!! 1 undo works ok, but what about more??
-//also, undo not working after switching frames!
 function undo(){
 
 if(undoCounter === 0 || undoCounter === undefined){
