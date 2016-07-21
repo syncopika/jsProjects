@@ -21,22 +21,24 @@ text-align: center;
 }
 
 #rightCol{
-margin-top: -2%;
+transform: translateX(-300%); 
+transition: .4s;
+position: absolute;
+top: 5%;
 text-align: center;
 }
 
+/*
 @media screen and (max-width: 1080px){
 #rightCol{
 margin-top: 0%;
 }
 }
+*/
 
 #toolbar{
-margin: 10px auto;
-border: black 1px solid;
 padding: 2px;
 text-align: center;
-margin-bottom: 5%;
 }
 
 #toolbar button{
@@ -150,13 +152,14 @@ margin-bottom: 5px;
 					<button id='#ffffff' class ='color btn'>eraser</button>
 					<button id='addPage' class='btn'>add another layer</button>
 					<button id ='clone' class='btn'> clone current layer</button>
-					<p>change brush size</p>
+					<button class='btn' onclick='undo()'> undo </button>
+					<p class="text-info">change brush size</p>
 					<input class='brushSize' type='range' min='.5' max='15' step='.5' value='5'>
 					<span id='brushSizeValue'> 5.0 </span>
 					
 					<!-- for adjusting contrast -->
 					<br>
-					<p>contrast</p>
+					<p class="text-info">contrast</p>
 							<p>
 						<span><button class='btn' id='incContrast' onclick='filterCanvas(inContrast)'>increase</button></span>
 						<span>&nbsp;</span>
@@ -164,7 +167,7 @@ margin-bottom: 5px;
 					</p>
 					
 					<!-- for adjusting brightness -->
-					<p>brightness</p>
+					<p class="text-info">brightness</p>
 					<p>
 						<span><button class='btn' id='incBrightness' onclick='filterCanvas(incBright)'>increase</button></span>
 						<span>&nbsp;</span>
@@ -172,6 +175,7 @@ margin-bottom: 5px;
 					</p>
 			</div>
 			
+	
 	 <div id='filters' class="dropdown">
 		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 			filters <span class="caret"></span>
@@ -215,6 +219,56 @@ margin-bottom: 5px;
 
 <script> 
 //check this out! http://perfectionkills.com/exploring-canvas-drawing-techniques/
+
+
+//temp arrays store pixel data for current canvas. if you switch frames, these arrays clear.  
+var clickX = [];
+var clickY = [];
+var clickDrag = [];
+var clickColor = [];
+var clickSize = [];
+
+//new arrays for the click arrays
+function clearClick(){
+clickX = [];
+clickY = [];
+clickDrag = [];
+clickColor = [];
+clickSize = [];
+}
+
+
+function addClick(x, y, dragging){
+clickX.push(x);
+clickY.push(y);
+clickDrag.push(dragging);
+clickColor.push(curColor);
+clickSize.push(curSize);
+}
+
+
+//ok new approach. canvasData will store pixel data via getImageData() for each canvas. the new thing is that canvasData will only hold the 10 MOST RECENT changes to each canvas. 
+//here's how it works: every time user finishes drawing a line, i.e. upon MOUSEUP, get image data for the current canvas and store it in AN ARRAY that corresponds to the right canvas in canvasData.
+// here is what is should look like: canvasData = {"canvas0": [Uint8ClampedArray1, Uint8ClampedArray2, Uint8ClampedArray3], "canvas1": [Uint8ClampedArray1, Uint8ClampedArray2, Uint8ClampedArray3], ....}
+var canvasData = {};
+
+//undoCounter provides a limit of 9 undos
+var undoCounter;
+
+//undo function!! 
+//get this to work properly!! 1 undo works ok, but what about more??
+//also, undo not working after switching frames!
+function undo(){
+
+if(undoCounter === 0 || undoCounter === undefined){
+undoCounter = canvasData[curCanvas].length - 1;
+}
+
+if(undoCounter > 0){
+context.clearRect(0, 0, theCanvas.width, theCanvas.height);
+context.putImageData(canvasData[curCanvas][--undoCounter], 0, 0);
+}
+}
 
 //for colorWheel
 var colorWheel = document.getElementById('colorWheel');
@@ -271,71 +325,29 @@ e.stopPropagation();
 })
 
 
-
 //stuff for the page-count thing at the top
 var page = 0;
 $('#count').html(curPage);//make sure 0 shows up when page loads
 
 
-
 //toggle toolbar
-$('#rightCol').hide();
+//$('#rightCol').hide();
 var showToolbar = false;
 
 function toggleToolbar(){
 if(!showToolbar){
-	$('#rightCol').show();
+    $('#rightCol').css('transform', 'translateX(0)');
+
+	//$('#rightCol').show();
+
 	showToolbar = true;
 }else{
-	$('#rightCol').hide();
+	$('#rightCol').css('transform', 'translateX(-300%)');
+	//$('#rightCol').hide();
 	showToolbar = false;
 }
 }
 
-
-//these gigantic objects will store all the pixel data for each canvas!
-//ideally the user might want to go back to a canvas and manipulate that canvas
-//this will allow individual canvas manipulation whenever you want.
-//the index of each array within dataX or dataY will correspond with the page number.
-var dataX = {};
-var dataY = {};
-var dataColor = {};
-var dataDrag = {};
-var dataSize = {};
-
-//store ALL coordinates for current canvas 
-//declare these variables here for the initial canvas
-//the purpose of these current array variables is to allow for canvas cloning
-var curClickX = []; 
-var curClickY = [];
-var curClickColor = [];
-var curClickDrag = [];
-var curClickSize = [];
-
-//temp arrays store pixel data for current canvas. if you switch frames, these arrays clear.  
-var clickX = [];
-var clickY = [];
-var clickDrag = [];
-var clickColor = [];
-var clickSize = [];
-
-//new arrays for the click arrays
-function clearClick(){
-clickX = [];
-clickY = [];
-clickDrag = [];
-clickColor = [];
-clickSize = [];
-}
-
-//new arrays for the curClick arrays
-function clearCurClick(){
-curClickX = [];
-curClickY = [];
-curClickDrag = [];
-curClickColor = [];
-curClickSize = [];
-}
 
 var lbrush = 0; 
 var curSize = 5;
@@ -394,20 +406,6 @@ for(var i = 0; i < clickX.length; i++){
 };
 
 
-function addClick(x, y, dragging){
-clickX.push(x);
-clickY.push(y);
-clickDrag.push(dragging);
-clickColor.push(curColor);
-clickSize.push(curSize);
-curClickX.push(x);
-curClickY.push(y);
-curClickDrag.push(dragging);
-curClickColor.push(curColor);
-curClickSize.push(curSize);
-}
-
-
 //#picture is the container of the canvas, so I used #picture to get the top and left coordinates
 var offsetTop = $('#picture').position()["top"];  
 var offsetLeft = $('#picture').position()["left"];
@@ -429,24 +427,16 @@ redraw();
 
 $('#' + curCanvas).mousemove(function(e) {
   if (paint){
-     if(cbrush === 1 || lbrush === 1){
-	 addClick(e.offsetX, e.offsetY, false);
-	 }
-	 else{
-	 //set dragging to 1 = solid lines when moving the mouse. 
 	 addClick(e.offsetX, e.offsetY, true);
-	 }
 	 redraw();
 }
 });
 
 $('#' + curCanvas).mouseup(function(e) {
+clearClick();
 //log new pixel data every time a canvas is drawn on!
 pixelData();
 paint = false;
-if(cbrush === 1){
-clearClick();
-}
 });
 
 $('#' + curCanvas).mouseleave(function(e){
@@ -454,18 +444,11 @@ paint = false;
 });
 
 $('#clear').click(function(){
+clearClick();
 context = document.getElementById(curCanvas).getContext("2d");
 context.clearRect(0, 0, theCanvas.width, theCanvas.height);
 context.fillStyle = "#FFFFFF";
 context.fillRect(0,0,theCanvas.width,theCanvas.height);
-clearClick();
-clearCurClick();
-//reset saved pixel data
-dataX[curCanvas] = [];
-dataY[curCanvas] = [];
-dataDrag[curCanvas] = [];
-dataColor[curCanvas] = [];
-dataSize[curCanvas] = [];
 });
 
 $(".color").click(function(){
@@ -538,45 +521,34 @@ canvasClone.appendTo('#picture');
 $('#' + newId)[0].getContext('2d').fillStyle = "#FFFFFF";
 $('#' + newId)[0].getContext('2d').fillRect(0,0,theCanvas.width,theCanvas.height);
 
-//append new cloned canvas id to dataX, dataY objects with cloned pixel data.
-dataX[newId] = dataX[curCanvas];
-dataY[newId] = dataY[curCanvas];
-dataDrag[newId] = dataDrag[curCanvas];
-dataColor[newId] = dataColor[curCanvas];
-dataSize[newId] = dataSize[curCanvas];
+//get image data for frame you want to clone
+var canvasToClone = context.getImageData(0, 0, theCanvas.width, theCanvas.height);
 
+//assign context to new canvas
 context = document.getElementById(newId).getContext("2d");
 
-//cloning a page should only reflect the pixel data of the current canvas!!
-//meaning you have to assign clickX, clickY, etc. => dataX[curPage], dataY[curPage], etc...
-clickX = dataX[curCanvas];
-clickY = dataY[curCanvas];
-clickDrag = dataDrag[curCanvas];
-clickColor = dataColor[curCanvas];
-clickSize = dataSize[curCanvas];
+//draw image data of most recent version of current canvas
+context.putImageData(canvasToClone, 0, 0);
 
-//redraw with new clickX, etc. data
-redraw();
 };
 
 //function for storing/modifying pixel data for each canvas
 function pixelData(){
 
-if(dataX[curCanvas] === undefined){
-dataX[curCanvas] = curClickX;
-dataY[curCanvas] = curClickY;
-dataColor[curCanvas] = curClickColor;
-dataDrag[curCanvas] = curClickDrag;
-dataSize[curCanvas] = curClickSize;
+if(canvasData[curCanvas] === undefined){
+canvasData[curCanvas] = [context.getImageData(0, 0, theCanvas.width, theCanvas.height)];
 }
 
-if(dataX[curCanvas] !== 'undefined' && curClickX.length > 0){
-dataX[curCanvas] = dataX[curCanvas].concat(curClickX);
-dataY[curCanvas] = dataY[curCanvas].concat(curClickY);
-dataColor[curCanvas] = dataColor[curCanvas].concat(curClickColor);
-dataDrag[curCanvas] = dataDrag[curCanvas].concat(curClickDrag);
-dataSize[curCanvas] = dataSize[curCanvas].concat(curClickSize);
+//if user returns to a previous canvas, add any new pixel data to the  existing array
+else if(canvasData[curCanvas] !== 'undefined' && canvasData[curCanvas].length < 10){
+canvasData[curCanvas].push(context.getImageData(0, 0, theCanvas.width, theCanvas.height));
 }
+
+else if(canvasData[curCanvas] !== 'undefined' && canvasData[curCanvas].length === 10){
+canvasData[curCanvas].shift();
+canvasData[curCanvas].push(context.getImageData(0, 0, theCanvas.width, theCanvas.height));
+}
+
 }
 
 //UP
@@ -605,7 +577,6 @@ $('#' + layerArray[curPage-1]).css({"z-index":0,"opacity":.6});
 //reset
 //when you leave a frame, reset everything!
 clearClick();
-clearCurClick();
 draw();
 }
 
@@ -633,7 +604,6 @@ $('#' + layerArray[curPage-1]).css({"z-index":0,"opacity":.6});
 
 //when you leave a frame, reset everything!
 clearClick();
-clearCurClick();
 
 draw();
 };
@@ -669,8 +639,9 @@ switch(e.which){
 	e.preventDefault();
 });
 
-var play;
+
 //functions for animation playback
+var play;
 function playForward(){
 play = null;
 play = setInterval(up,1000);
@@ -706,5 +677,6 @@ draw();
 </script>
 
 </body>
+
 
 </html>
