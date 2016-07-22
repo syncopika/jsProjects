@@ -95,7 +95,7 @@ file.puts "//data provided by Wiktionary (https://en.wiktionary.org/wiki/) under
 file.puts "var characters = ["
 
 #don't forget to change the range of 'i' appropriately to get the actual characters
-for i in 14..21 do
+for i in 22..22 do
 
 #change ul (i.e. to ul[2]) to access the other radicals depending on stroke counts
 #the index outside the parentheses indicates which radical in the n-stroke group is specified 
@@ -116,21 +116,11 @@ doc2 = Nokogiri::HTML(open(newURL))
 counter = 1
 
 while (doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text != "")	
+	
+	puts "currently accessing character number " + counter.to_s + "!"
+	
 	counterPinyin = 1
 	character = doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text
-    
-	#for wiktionary
-	newURL = URI.escape(base_url2 + character)
-	doc3 = Nokogiri::HTML(open(newURL, :allow_redirections => :all, :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE))
-	
-=begin
-	#not working too well because some characters are simplified versions of other characters, but they themselves have different meanings -__-
-
-	#what if the character has an alternative version/traditional version?
-	if (doc3.xpath('(//div/b/a)[1]').text != "")
-	character = character + ";" + doc3.xpath('(//div/b/a)[1]').text
-	end
-=end
 
 	#if character has a SIMPLIFIED version, please include it also
 	base_url3 = 'http://www.chinese-tools.com/tools/sinograms.html?q='
@@ -143,8 +133,9 @@ while (doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text != 
 	pinyin = ""
 	
 	#sometimes, wiktionary does not explicitly provide a pinyin (but provides a redirect to another variant character with the same pinyin -__-) so in cases like that, get the pinyin from the chinese-tools page
+	#nevermind, just get pinyin from chinese-tools. it's better ^_6
 	altPinyinCounter = 1
-	if (doc3.xpath('(//tt/span/a)[1]').text == "")
+	#if (doc3.xpath('(//tt/span/a)[1]').text == "")
 		#if wiktionary pinyin is not present, use chinese-tools
 		while (doc4.xpath('(//div[2]/div[' + altPinyinCounter.to_s + ']/div[1]/span)[2]').text != "")
 			altPinyin = doc4.xpath('(//div[2]/div[' + altPinyinCounter.to_s + ']/div[1]/span)[2]').text
@@ -153,21 +144,52 @@ while (doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text != 
 		end
 		#strip off trailing commas
 		pinyin = pinyin[0..(pinyin.length-1)]
-	end
+	#end
+  
+	#for wiktionary
+	newURL = URI.escape(base_url2 + character)
 	
+	begin #need begin in order to rescue an exception
+	doc3 = Nokogiri::HTML(open(newURL, :allow_redirections => :all, :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE))
+	
+	####### IMPORTANT!!! sometimes there is not an entry yet for a particular character in wiktionary. therefore, handle those exceptions HERE!!!! #######
+	
+	#IF FAILURE
+	rescue OpenURI::HTTPError => e
+		if e.message == "404 Not Found"
+			file.puts "{value: " + "'" + character + "'" + ", " + "pinyin: " + "'" + pinyin[0..(pinyin.length-2)] + "'" + ", " + "definition:\"\" " + "}" + ","
+			file.print ""
+			counter = counter + 1 #next doesn't automatically increment??
+			next
+		end
+		
+	#IF SUCCESS
+	else
+	
+=begin
+	#not working too well because some characters are simplified versions of other characters, but they themselves have different meanings -__-
+
+	#what if the character has an alternative version/traditional version?
+	if (doc3.xpath('(//div/b/a)[1]').text != "")
+	character = character + ";" + doc3.xpath('(//div/b/a)[1]').text
+	end
+=end
+
+	
+=begin
 	while (doc3.xpath('(//tt/span/a)[' + counterPinyin.to_s + ']').text != "")	
 		#fix pinyin here (i.e. ǔ => u3)
 		pinyin2 = doc3.xpath('(//tt/span/a)[' + counterPinyin.to_s + ']').text
 		pinyin = pinyin + pinyin_convert(pinyin2) + "," #doc3.xpath('(//tt/span/a)[' + counterPinyin.to_s + ']').text
 		counterPinyin = counterPinyin + 1
 	end
-	
+=end
 	
 	definition = ""
 	#for definition, ignore child elements (i.e. if there are quotations for a definition)
 	#collect multiple definitions
 	definitionCounter = 1
-	while (doc3.xpath('(//ol[1]/li)[' + definitionCounter.to_s + ']').text != "" || doc3.xpath('(//ol[1]/li)[' + definitionCounter.to_s + ']').text != "This entry needs a definition. Please add one, then remove {{defn}}.")
+	while (doc3.xpath('(//ol[1]/li)[' + definitionCounter.to_s + ']').text != "")
 	addDefinition = doc3.xpath('(//div[4]/ol[1]/li)[' + definitionCounter.to_s + ']').text
 	
 	#remove line breaks
@@ -191,11 +213,16 @@ while (doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text != 
 	addDefinition = addDefinition[0..stop-1]
 	end
 	
+=begin
+hopefully this will shave off some of the time it takes for this program to run. 
+I can manually remove the daggers easily. 
 	#some definitions have a dagger ("†") in front. ignore them here.
 	#EDIT: it actually indicates an obsolete definition. oh well. 
 	if addDefinition[0] == '†'
 		addDefinition = addDefinition[1..(addDefinition.length-1)]
 	end 
+=end 
+
 	
 	#lastly, some definitions might be blank, which are concatenated to definition and semi-colons get stacked.
 	#prevent that here	
@@ -210,9 +237,12 @@ while (doc2.xpath('(//td/div[3]/div[2]/ul/li/a)[' + counter.to_s + ']').text != 
 	file.puts "{value: " + "'" + character + "'" + ", " + "pinyin: " + "'" + pinyin[0..(pinyin.length-2)] + "'" + ", " + "definition: " + "\"" + definition.strip + "\"" + "}" + ","
 	file.print ""
 	counter = counter + 1
+
+end #end begin
+end  #end while
 end 
 
-end
+
 #close array
 file.puts "]"
 
