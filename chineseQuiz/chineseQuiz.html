@@ -87,9 +87,24 @@ modeSelect.addEventListener('change', function(){
 	question.textContent = "what is the " + mode + " for " + theChar.value;
 });
 
+function hasDef(word){
+	return word.definition !== "";
+}
+
 function pickRandomChar(){
+	//get a random valid index value
 	var rand = Math.floor(Math.random() * characters.length);
+	
 	theChar = characters[rand];
+	
+	//if theChar has no definition, please pick one that does have one.
+	while(!hasDef(theChar)){
+	//make sure you revise 'rand' here too!!!
+	//that was the source of confusion - the reason an infinite loop appeared was because you didn't change 'rand' each iteration!
+	rand = Math.floor(Math.random() * characters.length);
+	theChar = characters[rand];
+	}
+	
 	if(mode === "pinyin"){
 	question.textContent = "what is the pinyin for " + theChar.value;
 	}else if(mode === "definition"){
