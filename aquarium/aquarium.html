@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>aquarium</title>
+<meta charset = 'utf-8'>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	
+<style>
+body{
+overflow: hidden;
+background-image: url("oceanBG.png");
+background-size: auto 1000px;
+}
+
+h2{
+font-family: helvetica;
+color: #DDECCF;
+}
+
+#sharkBox{
+margin-top: 20%;
+transform: translateX(100%);
+}
+
+#jellyFishBox{
+z-index: 2;
+}
+
+#jellyfish{
+}
+
+</style>
+	
+</head>
+
+
+<body>
+<h2 id='info'></h2>
+
+<div id='sharkBox'>
+<img id="shark" src="shark1.png">
+</div>
+
+<div id='stingrayBox'>
+<img id="stingray" src="stingray1.png">
+</div>
+
+<div id='jellyFishBox'>
+<img id="jellyfish" src="jellyfish2.gif">
+</div>
+
+</body>
+
+
+<script>
+var switchPic = 1;
+var sharkPos = 100;
+var stingrayPos = 130;
+var jellyFishAngle = 0;
+var jellyFishX = 95;
+var jellyFishY = 50;
+
+//console.log(typeof $('#shark').css('transform'));
+
+setInterval(function(){swim('shark', sharkPos, 100)}, 300);
+setInterval(function(){move('shark')}, 600);
+
+setInterval(function(){swim('stingray', stingrayPos, 120)}, 350);
+setInterval(function(){move('stingray')}, 300);
+
+setInterval(jellyFishSwim, 400);
+
+function jellyFishSwim(){
+	var jellyfishBox = $('#jellyFishBox');
+	var jellyfish = $('#jellyfish');
+	var rand = Math.floor(Math.random()*2) + 1;
+	//rotate jellyfish 
+	if(rand === 1){
+	    jellyFishAngle += 3;
+		jellyfish.css('transform', 'rotateY(' + jellyFishAngle + 'deg)');
+		jellyfishBox.css('transform', 'translateX(' + --jellyFishX + '%) translateY(' + --jellyFishY + '%)');
+	}else{
+		jellyFishAngle -= 3;
+		jellyfish.css('transform', 'rotateX(' + jellyFishAngle + 'deg)');
+		jellyfishBox.css('transform', 'translateX(' + --jellyFishX + '%) translateY(' + --jellyFishY + '%)');
+	}
+	//then move it
+	if(jellyFishX < -20){
+		jellyFishX = 110;
+	}
+	if(jellyFishY > 100){
+		jellyFishY = 60;
+	}
+}
+
+var id = null;
+function getInfo(){
+//console.log('hey');
+var info = document.getElementById('info');
+if(this.id === 'shark' && this.id !== id){
+	info.textContent = "this is a shark";
+}else if( this.id === 'stingray' && this.id !== id){
+	info.textContent = "this is a stingray";
+}else if(this.id === 'jellyfish' && this.id !== id){
+	info.textContent = "jellyfish";
+}else if(id === this.id && info !== ""){
+	info.textContent = "";
+}
+id = this.id;
+}
+
+var images = document.getElementsByTagName("img");
+for(var i = 0; i < images.length; i++){
+images[i].addEventListener('click', getInfo);
+}
+
+function swim(animal, pos, start){
+if(pos > -20){
+	if(animal === 'shark'){
+		sharkPos -= 2;
+	}
+	if(animal === 'stingray'){
+		stingrayPos -= 4;
+	}
+$('#' + animal + 'Box').css('transform','translateX(' + pos + '%)');
+
+}else{
+	if(animal === 'shark'){
+		sharkPos = start;
+}
+
+if(animal === 'stingray'){
+stingrayPos = start;
+}
+
+$('#' + animal + 'Box').css('transform','translateX(' + pos + '%)');
+}
+}//end swim function
+
+
+function move(animal){
+if(switchPic === 1){
+    var newPic = animal + '2.png';
+	$('#' + animal).attr('src', newPic);
+	switchPic = 2;
+}else if(switchPic === 2){
+	var newPic = animal + '1.png';
+	$('#' + animal).attr('src', newPic);
+	switchPic = 1;
+}
+}
+
+
+
+</script>
+
+
+</html>
