@@ -28,8 +28,6 @@ transform: translateX(100%);
 z-index: 2;
 }
 
-#jellyfish{
-}
 
 </style>
 	
@@ -61,6 +59,7 @@ var stingrayPos = 130;
 var jellyFishAngle = 0;
 var jellyFishX = 95;
 var jellyFishY = 50;
+//var currentX = 100;
 
 //console.log(typeof $('#shark').css('transform'));
 
@@ -72,6 +71,7 @@ setInterval(function(){move('stingray')}, 300);
 
 setInterval(jellyFishSwim, 400);
 
+//special swim function for jellyfish
 function jellyFishSwim(){
 	var jellyfishBox = $('#jellyFishBox');
 	var jellyfish = $('#jellyfish');
@@ -96,26 +96,33 @@ function jellyFishSwim(){
 }
 
 var id = null;
+
+//provide info when an animal is clicked on
 function getInfo(){
-//console.log('hey');
 var info = document.getElementById('info');
-if(this.id === 'shark' && this.id !== id){
-	info.textContent = "this is a shark";
-}else if( this.id === 'stingray' && this.id !== id){
-	info.textContent = "this is a stingray";
-}else if(this.id === 'jellyfish' && this.id !== id){
-	info.textContent = "jellyfish";
-}else if(id === this.id && info !== ""){
+if(id === this.id && info !== ""){
 	info.textContent = "";
+	id = null;
 }
-id = this.id;
+else if(this.id === 'shark' && id !== this.id){
+	info.textContent = "this is a shark";
+	id = this.id;
+}else if( this.id === 'stingray' && id !== this.id){
+	info.textContent = "this is a stingray";
+	id = this.id;
+}else if(this.id === 'jellyfish' && id !== this.id){
+	info.textContent = "jellyfish";
+	id = this.id;
+}
 }
 
+//attach the getInfo() function to each animal
 var images = document.getElementsByTagName("img");
 for(var i = 0; i < images.length; i++){
 images[i].addEventListener('click', getInfo);
 }
 
+//function that moves the animal
 function swim(animal, pos, start){
 if(pos > -20){
 	if(animal === 'shark'){
@@ -140,6 +147,7 @@ $('#' + animal + 'Box').css('transform','translateX(' + pos + '%)');
 }//end swim function
 
 
+//the 'animating' function
 function move(animal){
 if(switchPic === 1){
     var newPic = animal + '2.png';
@@ -151,7 +159,6 @@ if(switchPic === 1){
 	switchPic = 1;
 }
 }
-
 
 
 </script>
