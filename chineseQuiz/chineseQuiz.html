@@ -3,8 +3,9 @@
 <html>
 
 <head>
-	<title> chinese test </title>
+	<title> chinese quiz app </title>
 	<script src = 'test.js'></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 	<meta charset = 'utf-8'>
 	<style>
 		div {
@@ -33,7 +34,7 @@
 	
 	<div id='showAnswer'>
 	<input id="answer" type='text'>
-	<button id="submitAnswer" onclick="evaluateAnswer()">submit</button>
+	<button class='btn' id="submitAnswer" onclick="evaluateAnswer()">submit</button class='btn'>
 	</div>
 	
 	<div id='showResult'>
@@ -41,7 +42,7 @@
 	</div>
 	
 	<div>
-	<button id="playAgain" onclick="play()">new question?</button>
+	<button class='btn' id="playAgain" onclick="play()">new question?</button class='btn'>
 	<select id="mode">
 		<option>pinyin</option>
 		<option>definition</option>
@@ -50,12 +51,25 @@
 	
 	<div>
 	<br>
-	<button id="showCharacter" onclick="showCharacter()">show pinyin and definition</button>
+	<button class='btn' id="showCharacter" onclick="showCharacter()">show pinyin and definition</button class='btn'>
 	</div>
 	
 	<div id='showChar'>
 		<p id='pinyin'></p>
 		<p id='definition'></p>
+	</div>
+	
+	<br>
+	
+	<div id="searchCharacter">
+		<h2>find pinyin and definition of a character?</h2>
+		<input id="searchBar" type='text'>
+		<button class='btn' id="searchChar" onclick="search()">search</button class='btn'>
+	
+		<div id='showChar2'>
+			<p id='pinyin2'></p>
+			<p id='definition2'></p>
+		</div>
 	</div>
 	
 	</div> <!-- end div body -->
@@ -65,10 +79,10 @@
 <script>
 
 //var characters  = [
-characters.push({value: "熊", pinyin: "xiong", definition: "bear"});
-characters.push({value: "謝", pinyin: "xie", definition: "thanks"});
-characters.push({value: "鴨", pinyin: "ya", definition: "duck"});
-characters.push({value: "我", pinyin: "wo", definition: "me"});
+characters.push({value: "熊", pinyin: "xiong2", definition: "bear"});
+characters.push({value: "謝", pinyin: "xie4", definition: "thanks"});
+characters.push({value: "鴨1", pinyin: "ya", definition: "duck"});
+characters.push({value: "我", pinyin: "wo3", definition: "me"});
 //];
 
 var theChar; //this is the character that is shown to the user
@@ -77,6 +91,8 @@ var question = document.getElementById("question");
 var answer = document.getElementById("answer");
 var result = document.getElementById("result");
 var modeSelect = document.getElementById("mode");
+var showPinyin = document.getElementById("pinyin2");
+var showDefinition = document.getElementById("definition2");
 
 //modes: pinyin, definition
 var mode = "pinyin"; //pinyin mode is default
@@ -86,6 +102,7 @@ modeSelect.addEventListener('change', function(){
 	//change current question appropriately depending on the new mode
 	question.textContent = "what is the " + mode + " for " + theChar.value;
 });
+
 
 function hasDef(word){
 	return word.definition !== "";
@@ -114,14 +131,24 @@ function pickRandomChar(){
 
 function evaluateAnswer(){
 
+	//split pinyin since there may be commas
+	var answerPinyin = (theChar.pinyin).split(',');
+	
+	//for definition, replace all commas with semicolons, then split at comma
+	var answerDefinition = (theChar.definition).replace(new RegExp(/,/, 'g'), ";");
+	answerDefinition = answerDefinition.toLowerCase();
+	answerDefinition = answerDefinition.split(';');
+	answerDefinition = answerDefinition.map(function(index){ return index.trim() });
+	//console.log(answerDefinition);
+	
 	if(mode === "pinyin"){
-		if(answer.value === theChar.pinyin){
+		if(answerPinyin.indexOf(answer.value) > -1){
 			result.textContent = "CORRECT!!";
 		}else{
 			result.textContent = "NOPE! TRY AGAIN?";
 		}
 	}else if(mode === "definition"){
-		if(answer.value === theChar.definition){
+		if(answerDefinition.indexOf(answer.value) > -1){
 			result.textContent = "CORRECT!!";
 		}else{
 			result.textContent = "NOPE! TRY AGAIN?";
@@ -144,6 +171,22 @@ function play(){
 	question.textContent = "";
 	pickRandomChar();
 }
+
+//search character
+function search(){
+	
+	var characterToFind = document.getElementById('searchBar').value;
+
+	for(var i = 0; i < characters.length; i++){
+		if((characters[i].value).indexOf(characterToFind) > -1){
+			
+			showPinyin.textContent = "pinyin: " + characters[i].pinyin;
+			showDefinition.textContent = "definition: " + characters[i].definition;
+
+		}
+	}
+}
+
 
 //page on load
 pickRandomChar();
