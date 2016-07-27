@@ -69,4 +69,5 @@ var characters = [
 {value: '临;臨', pinyin: '', definition: ""},
 ...
 ```
+The most current implementation gathers the simplified and traditional characters from one webpage, and relies on another webpage for the definition. After trying out this program on a larger list containing over 500 characters, I think this program is too slow and inefficient to be used to actually gather as many characters as possible. Based on output (every time a character was processed) to the command line, it seemed to take on average between 1 and 2 seconds per character (so I think it runs approximately O(n)). 
 
