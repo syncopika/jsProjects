@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+	 
+	 <html>
+	 
+	 <head>
+	 <meta charset="utf-8">
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+	  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	 <title>syncopika's page </title>
+
+	 <style>
+	 #portfolio, #contactInfo{
+	     display: none;
+	     margin-top: 0%;
+	     /*transform: translateX(-200%);
+	     transition: .4s;
+	     */
+	 }
+	 #main p{
+	     font-size: 28px;
+	 }
+	 #portfolio p{
+	     font-family: Helvetica;
+	     font-size: 14px;
+	 }
+	 #main h2{color: #193D5B;}
+	 #main h1{font-size: 42px; text-align:center; color: #193D5B;}
+	 ul{margin-left: 5px; text-align:center; list-style-type: none;padding: 5px;}
+	 li {display:inline; color: #DDDGGG; padding-left:6px;}
+	 li a{text-decoration:none; color: #DDDFFF;}
+	 a:active, a:hover, a:visited{
+	     text-decoration:none;
+	 }
+	 #aboutMe{margin-top: 20px; display:none; margin-bottom: 70px;}
+	 #aboutMe p {color: #909ccf}
+	 #sideBox{
+	     text-align:center;
+	 }
+	 #footer{
+	     margin-top:40px;
+	     text-align:center;
+	     background-color: #FFFFFF;
+	     height:30px;
+	     width:100%;
+	 }
+	 #footer p {font-size: 14px; color:#193D5B; padding-top: 2px;}
+	 </style>
+
+
+
+	 </head>
+	 
+	 
+	 <body>
+	 <div id='main' class='container'>
+	 <h1> n . c . h <h1>
+	   {block:Description}
+            <p style='font-size:12px; font-family: courier new;'>{Description}</p>
+        {/block:Description}
+	 <!-- wow, you found me! thanks for visiting! if you'd like, you can check out my CV here: http://syncopika.tumblr.com/cv -->
+	 <ul>
+	 <li id="about"><a href="#">about</a></li>
+	 <li onclick='showPort()'><a href="#">portfolio</a></li>
+	 <!-- http://syncopika.tumblr.com/portfolio -->
+	 <li id="contact"><a href="#">contact</a></li>
+	 </ul>
+	 
+	 <div id="aboutMe">
+	 
+	 <div id='about'>
+	 <p>i like music and making things. </p>
+	 <p style='font-size: 18px'> syncopika = syncopation + pikachu </p>
+	 <p>check out my links! thanks for visiting :D </p>
+	 </div>
+	 
+	 <div id='links'>
+	 <h2>links</h2>
+	 <p><a href='http://soundcloud.com/syncopika'>SoundCloud</a></p>
+	 <p><a href='https://musescore.com/user/121754'>MuseScore</a></p>
+	 <p><a href='http://opengameart.org/users/syncopika'>OpenGameArt</a></p>
+	 <p><a href='https://github.com/syncopika'>GitHub</a></p>
+	 <p><a href='http://animescience.tumblr.com/'>"art" blog</a></p>
+	 </div>
+
+
+	 
+	 <div id='misc'>
+	 <h2>website ideas & apps</h2>
+	 <p style='font-size: 13px'>some of these are not intended for mobile viewing, sorry :) additionally, please use Google Chrome to view if possible. </p>
+	 <p><a href="http://syncopika.tumblr.com/greenbearmusic"> other website idea</a></p>
+	 <p><a href="http://syncopika.tumblr.com/htmldrawapp"> drawing/animating app</a></p>
+	 <p><a href='http://syncopika.tumblr.com/simplegraphing'>simple graphing app</a></p>
+	 <p><a href='http://syncopika.tumblr.com/audioapp'>basic audio app</a></p>
+	 <p><a href='http://syncopika.tumblr.com/chinesequizapp'>chinese quiz app</a></p>
+	 <p><a href='http://syncopika.tumblr.com/picturecompare'>picture comparer</a></p>
+	 <p><a href='http://syncopika.tumblr.com/aquarium'>aquarium</a></p>
+	 </div>
+	 
+	 	 
+	 <div id='projects'>
+	 <h2>projects I've worked on/currently working on:</h2>
+     <p><a href="http://www.armouredboar.com/"> works for ArmouredBoar </a></p>
+     <p><a href="https://soundcloud.com/green_bear_music/sets/fantasy-tales-online-soundtrack"> works for Fantasy Tales Online </a></p>
+     <p><a href="https://greenbearmusic.bandcamp.com/album/visual-novel-bgm-feb-mar-2014"> various visual novel stuff</a> </p>
+     </div>
+     
+	 
+	 </div> <!-- end aboutMe -->
+	 
+	 
+	 <p id='contactInfo' style='text-align:center'>contact me through one of my links? thanks! :)</p>
+	 
+
+	 <!-- PORTFOLIO --> <!-- PORTFOLIO -->  <!-- PORTFOLIO -->
+	 
+	  <div id='portfolio' class="container">
+	 
+	 <div class="row"> <!-- row for header -->
+	 <h1 style="float:left">music portfolio</h1> 
+	 </div>
+	 
+	 <div class="row">
+     
+     <div id="sideBox" class="col-md-12 col-sm-12">
+     
+    	 <h1>partial discography</h1>
+     	<div id="bandcamp">
+     	<iframe style="border: 0; width: 700px; height: 282px;" src="https://bandcamp.com/EmbeddedPlayer/album=764407444/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=true/artwork=small/transparent=true/" seamless><a href="http://greenbearmusic.bandcamp.com/album/bgm-fun-vol-10">BGM Fun Vol.10 by n.c.h</a></iframe>
+     	</div>
+     			<button id='next'>next</button>
+    			 <p>full discography @ <a href="http://greenbearmusic.bandcamp.com" target="_blank"> my bandcamp </a>!</p>
+	 
+     		
+     </div>
+ 
+     </div> <!-- end the first row --> 
+     
+     <hr/>
+     <div class="row" style="margin-top:20px;"> 
+     <div id="arrangements" class="col-md-12 col-sm-12">
+     <h1 id='arrangements'>arrangements</h1>
+     
+     <div id="box3">
+
+     <iframe frameborder="no" height="102" scrolling="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/154662596&amp;auto_play=false&amp;hide_related=true&amp;show_comments=false&amp;show_user=true&amp;show_reposts=false&amp;visual=false" width="80%"></iframe>
+	     
+	 </div>
+     <button id='clickme'>next</button>
+     <p>sheet music for select arrangements can be found <a href='https://www.scribd.com/syncopika' target="_blank">here</a></p>
+     </div>
+	 </div>
+	 
+<hr/>
+<div class="row" style="margin-top:20px;">
+     <div id="commissions" class="col-md-12 col-sm-12">
+     <h1 id='commissions'>commissioned work</h1>
+     <h2><a href="http://www.fantasytalesonline.com/" target="_blank">Fantasy Tales Online</a></h2>
+     <iframe frameborder="no" height="300" scrolling="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/89302627&amp;auto_play=false&amp;hide_related=false&amp;show_comments=false&amp;show_user=true&amp;show_reposts=false&amp;visual=false" width="80%"></iframe>
+     <h2>various visual novel music</h2>
+     <div id='visNov'>
+     <iframe style="border: 0; width: 700px; height: 292px;" src="https://bandcamp.com/EmbeddedPlayer/album=2294061245/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=true/artwork=small/transparent=true/" seamless><a href="http://greenbearmusic.bandcamp.com/album/visual-novel-bgm-feb-mar-2014">Visual Novel BGM (Feb.-Mar. 2014) by n.c.h</a></iframe>
+        </div>
+     </div>
+</div>
+<hr/>
+<div class="row" style="margin-top:20px;">     
+     	 <div class='col-md-12 col-sm-12' id='comments'>
+     <h1> some kind words...</h1>
+     <p>"Brilliant communication, music was composed in a high quality fashion and fit our game perfectly. I will certainly be requesting more music from Nicholas for our future games"</p>
+     <p>-Josh Barnard, ArmouredBoar (Hero Keeper-PC/Desura)</p>
+     <br>
+     <p>"syncopika did a few tracks for FI: Interview and I can definitely give my endorsement. He/She is very nice and easy to work with. syncopika also gets things done quickly :3"</p>
+     <p>-Googaboga, Lemmasoft Forum user and creator of the visual novel FI:Interview</p>
+     </div>
+ </div>
+
+
+	 </div> <!-- close container -->
+	 
+	 <script>
+	      $('#portfolio').hide();
+	      $('#contactInfo').hide();
+	 </script>
+	<!-- END PORTFOLIO --> <!-- END PORTFOLIO -->  <!-- END PORTFOLIO -->
+	
+		   <div id='footer'>
+	      <p> (c)2015,2016 Green Bear Works</p>   
+	      </div>
+
+     </div>
+	 
+	 </body>
+	 
+ <script>
+	 	 
+console.log("wow, you found me! thanks for visiting! if you'd like, you can check out my CV here: http://syncopika.tumblr.com/cv");
+	 	 
+$('button').addClass('btn');
+
+var showPortfolio = false; 	
+var showContact = false;
+	
+	 
+function showPort(){
+	     	 if(!showPortfolio){
+	     	     //update initial bandcamp links so it shows tracklist. for some reason if you wait for the page to load all the way, tracklist=true disappears. :<
+	     	     $('#bandcamp').html('<iframe style="border: 0; width: 700px; height: 282px;" src="https://bandcamp.com/EmbeddedPlayer/album=764407444/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=true/artwork=small/transparent=true/" seamless><a href="http://greenbearmusic.bandcamp.com/album/bgm-fun-vol-10">BGM Fun Vol.10 by n.c.h</a></iframe>');
+	     	     
+	     	     $('#visNov').html('<iframe style="border: 0; width: 700px; height: 292px;" src="https://bandcamp.com/EmbeddedPlayer/album=2294061245/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=true/artwork=small/transparent=true/" seamless><a href="http://greenbearmusic.bandcamp.com/album/visual-novel-bgm-feb-mar-2014">Visual Novel BGM (Feb.-Mar. 2014) by n.c.h</a></iframe>');
+	     	     
+	     	     $('#portfolio').show('swing');
+	       // $('#portfolio').css('transform', 'translateX(0)');
+	        showPortfolio = true;
+	  	     }else{
+	  	    $('#portfolio').hide('swing');
+	  	     //$('#portfolio').css('transform', 'translateX(-200%)');
+	  	     showPortfolio = false;
+	  	 }
+	     
+	 }//end showPort()
+	 
+	 
+	 $('#about').click(function(){ 
+	     var about =  $('#aboutMe');
+	     if ($('#aboutMe').is(':visible')){
+	         $('#aboutMe').hide();
+	     }else{
+	         $('#contactInfo').hide();
+	         $('#aboutMe').show();
+	     }
+	 });
+	 
+	 $('#contact').click(function(){
+	     if(!showContact){
+	         $('#contactInfo').show();
+	         showContact = true;
+	     }else{
+	         $('#aboutMe').hide();
+	          $('#contactInfo').hide();
+	          showContact = false;
+	     }
+	 });
+
+</script>
+
+<script>
+var soundcloud = {
+1:"<iframe width=\"80%\" height=\"102\" scrolling=\"no\" frameborder=\"no\" src=\"https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/154662596&amp;auto_play=false&amp;hide_related=false&amp;show_comments=false&amp;show_user=true&amp;show_reposts=false&amp;visual=false\"></iframe>",
+2:'<iframe width="80%" height="102" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/182721110&amp;color=ff5500&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false"></iframe>',
+3:"<iframe width=\"80%\" height=\"102\" scrolling=\"no\" frameborder=\"no\" src=\"https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/209110662&amp;auto_play=false&amp;hide_related=false&amp;show_comments=false&amp;show_user=true&amp;show_reposts=false&amp;visual=false\"></iframe>",
+4:'<iframe width="80%" height="102" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/264147169&amp;color=ff5500&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false"></iframe>',
+5:'<iframe width="80%" height="102" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/209159656&amp;color=ff5500&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false"></iframe>'
+}
+
+var bandcamp = {
+1:"<iframe style=\"border: 0; width: 700px; height: 282px;\" src=\"https://bandcamp.com/EmbeddedPlayer/album=2349212220/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=true/artwork=small/transparent=true/\" seamless><a href=\"http://greenbearmusic.bandcamp.com/album/bgm-fun-vol-6\">BGM Fun Vol.6 by n.c.h</a></iframe>",
+2:"<iframe style=\"border: 0; width: 700px; height: 282px;\" src=\"https://bandcamp.com/EmbeddedPlayer/album=932190421/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=true/artwork=small/transparent=true/\" seamless><a href=\"http://greenbearmusic.bandcamp.com/album/bgm-fun-vol-7\">BGM Fun Vol.7 by n.c.h</a></iframe>",
+3:'<iframe style="border: 0; width: 700px; height: 282px;" src="https://bandcamp.com/EmbeddedPlayer/album=1715420384/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=true/artwork=small/transparent=true/" seamless><a href="http://greenbearmusic.bandcamp.com/album/bgm-fun-vol-2">BGM Fun Vol.2 by n.c.h</a></iframe>',
+4:'<iframe style="border: 0; width: 700px; height: 282px;" src="https://bandcamp.com/EmbeddedPlayer/album=3271172078/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=true/artwork=small/transparent=true/" seamless><a href="http://greenbearmusic.bandcamp.com/album/bgm-fun-vol-9">BGM Fun Vol.9 by n.c.h</a></iframe>',
+5:'<iframe style="border: 0; width: 700px; height: 282px;" src="https://bandcamp.com/EmbeddedPlayer/album=764407444/size=large/bgcol=ffffff/linkcol=0687f5/artwork=small/transparent=true/" seamless><a href="http://greenbearmusic.bandcamp.com/album/bgm-fun-vol-10">BGM Fun Vol.10 by n.c.h</a></iframe>'
+}
+
+//the next variables apply to the bandcamp and soundcloud things
+var scButton = document.getElementById('clickme');
+var bcButton  = document.getElementById('next');
+var i = 1;
+var j = 0;
+
+///for soundcloud stuff
+function changeMusic(){
+i = i + 1;
+if (i == 6){i=1;};
+document.getElementById('box3').innerHTML = soundcloud[i];
+}
+
+///for bandcamp stuff
+function changeMusic2(){
+j = j + 1;
+if (j == 6){j=1;};
+document.getElementById('bandcamp').innerHTML = bandcamp[j];
+}
+
+bcButton.addEventListener('click', changeMusic2);
+scButton.addEventListener('click', changeMusic);
+	 	
+
+</script>
+	 
+	 
+</html>
+	 
