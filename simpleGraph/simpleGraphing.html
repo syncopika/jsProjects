@@ -61,10 +61,15 @@ var xCoord = []; //store x coordinates here
 var yCoord = []; //store y coordinates here
 
 //helper function
+//equationComponents is supposed to be an array(the equation split up into chunks)
 function assembleEq(number, equationComponents){
+  
   var total = 0;
+ 
   for(i = 0; i < equationComponents.length; i++){
-    //check indices for x variables
+    
+	var exp = 1;
+	//check indices for x variables
     if(equationComponents[i].indexOf('x') >= 0){
   
       //check for coefficients
@@ -74,51 +79,57 @@ function assembleEq(number, equationComponents){
         coeff = coeff + 1;
       }
     
-      coeff = parseInt(coeff);
+      coeff = parseInt(coeff); 
   
+	}else if(equationComponents[i-1] !== undefined && equationComponents[i-1].indexOf('x^') > -1){
       //check for exponents
-      var segment2 = segment.substring(segment.indexOf('x'),segment.length);
-     
-      //use regex
-      var regx = new RegExp(/[0-9]/,'g');
-      var exp = parseInt(segment2.match(regx));//parseInt(segment2);
-      //console.log(exp)
-      if(isNaN(exp)){
-        exp = 1;
-      }
-      //console.log(exp)
-      var product = Math.pow(number, exp) * coeff;
-      total += product;
-    }else{
+	  //one way to check for exponents, if there are multiple, may be to see if the previous index has this substring: 'x^'
+	  var segment2 = equationComponents[i];
+	  //console.log(segment2);
+	  exp = parseInt(segment2);
+	  
+	  var product = Math.pow(number, exp) * coeff;
+	  total += product;
+	}else{
       total += parseInt(equationComponents[i]);
     }
   }
   return total;
 }
 
+/***** get equation components! *****/
+function getEqComp(string){
 
-button.onclick = function(){//alert(formula.value);
-
-//pretty basic right now, but I can calculate coordinates of some quadratic equations with this! :D 
-var a = formula.value; //input should just be like 2x^2+5, no y=... needed.
 var newStr = '';
 
 //modify string to have spaces right before any addition or subtraction places
-for(i = 0; i < a.length; i++){
-  if(a[i+1] === '-' || a[i+1] === '+'){
-    newStr += a[i];
+for(i = 0; i < string.length; i++){
+  if(string[i+1] === '-' || string[i+1] === '+' || string[i] === '^'){
+    newStr += string[i];
     newStr += ' ';
   }else{
-    newStr += a[i];
+    newStr += string[i];
   }
 }
 
 var b = newStr.split(' '); //an array (the user-inputted equation broken into 'chunks') that will be passed to assembleEq();
 
+//check what the components look like
+//console.log(b);
+return b;
+}
+
+/***** BUTTON CLICK TO START GRAPHING ******/
+button.onclick = function(){//alert(formula.value);
+
+//pretty basic right now, but I can calculate coordinates of some quadratic equations with this! :D 
+var a = formula.value; //input should just be like 2x^2+5, no y=... needed.
+var arrayForEq = getEqComp(a);
+
 var numOfCoord = numCoords.value; 
 for(j = -numOfCoord/2; j <= numOfCoord/2; j++){  //YOU MUST MAKE THIS LOOP USE A COUNTER VARIABLE NAME OTHER THAN 'i' !
   xCoord.push(j);
-  var y = assembleEq(j, b);
+  var y = assembleEq(j, arrayForEq);
   yCoord.push(y);
 }
 //console.log(xCoord)
@@ -152,15 +163,6 @@ var d = id.data;
 ctx.putImageData(id, xCoord[i]+298, 301-yCoord[i]); //shift graph 10 to the right
 ctx.fillStyle = curColor;
 ctx.fillRect(xCoord[i]*5+298,301-yCoord[i]*5,5,5);
-//the below is what I used originally. 
-//ctx.lineJoin = 'round';
-//ctx.beginPath();
-//ctx.strokeStyle = curColor;
-//ctx.lineWidth = curSize;
-//ctx.moveTo(xCoord[i]*5+1,600-yCoord[i]*5+1);
-//ctx.lineTo(xCoord[i]*5-1,600-yCoord[i]*5-1);
-//ctx.closePath();
-//ctx.stroke();
 }
 };//end button click event
 
@@ -178,7 +180,6 @@ clearGrid();
 drawGrid(); 
 };
 
-
 function connectPoints(){
 ctx.lineJoin = 'round';
 	for(var i = 0; i < xCoord.length; i++){
@@ -195,7 +196,6 @@ ctx.lineJoin = 'round';
 connect.onclick = function(){
 connectPoints();
 }
-
 
 //time to draw on the canvas...(make sure the below also goes within the button onclick event!!)
 function drawGrid(){
