@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html>
+
+
+<head>
+	<title>audio visualizer</title>
+	<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+</head>
+
+<style>
+.canvas{
+border: 1px solid black;
+}
+
+.col-md-8{
+text-align: center;
+}
+
+h2{
+text-align:center;
+font-family: 'Roboto', sans-serif;
+}
+
+ul, #audioPlayer{
+display: block;
+margin:10px auto;
+text-align:center;
+}
+
+li{
+display: inline-block;
+list-style-type: none;
+}
+
+#audioText{
+text-align:center;
+}
+</style>
+
+
+<body>
+<h2>audio visualizer 2</h2>
+
+<div class='row'>
+	<div class='col-md-offset-2 col-md-8'>
+		<canvas class='canvas' id="theCanvas" width="600" height="600"></canvas>
+		<canvas class='canvas' id="theCanvas2" width="600" height="600"></canvas>
+	</div>
+</div>	
+<div class='row'>
+	<div class='col-md-offset-2 col-md-8'>
+		<canvas class='canvas' id="theCanvas3" width="600" height="600"></canvas>
+		<canvas class='canvas' id="theCanvas4" width="600" height="600"></canvas>
+	</div>
+</div>	
+	
+	<audio id="audioPlayer"  controls preload='auto'></audio>
+		<ul>
+			<li><button id='importMusic' class='btn' onclick='openFile(handleFile)'>import music</button></li>
+			<input id="fileInput" style="display:none;" type="file">
+			<li><button id='playMusic' class='btn' onclick="playAudio()">play music</button></li>
+			<li><button id='stopMusic' class='btn' onclick="stopAudio()">stop music</button></li>
+		</ul>
+	<p id="audioText"></p>
+</body>
+
+<script>
+
+
+//FOR THE CANVAS ===========================================
+var canvas = document.getElementById("theCanvas");
+var canvas2 = document.getElementById("theCanvas2");
+var canvas3 = document.getElementById("theCanvas3");
+var canvas4 = document.getElementById("theCanvas4");
+
+var canvasCtx = canvas.getContext("2d");
+var canvasCtx2 = canvas2.getContext("2d");
+var canvasCtx3 = canvas3.getContext("2d");
+var canvasCtx4 = canvas4.getContext("2d");
+
+/*
+function paint(freq){  //pass in frequency data from array
+canvasCtx.clearRect(0, 0, WIDTH, HEIGHT); //clear canvas first
+if(freq > canvas.height/2){
+
+canvasCtx.beginPath();
+canvasCtx.moveTo(canvas.height/2, canvas.width/2 - freq);
+canvasCtx.lineTo(canvas.height/2, canvas.width/2 - freq - 10);
+canvasCtx.closePath();
+canvasCtx.strokeStyle = "blue";
+canvasCtx.lineWidth = 2; 
+canvasCtx.stroke(); 
+
+}else if(freq < canvas.height/2){
+
+canvasCtx.beginPath();
+canvasCtx.moveTo(canvas.height/2, canvas.width/2 + freq);
+canvasCtx.lineTo(canvas.height/2, canvas.width/2 + freq + 10);
+canvasCtx.closePath();
+canvasCtx.strokeStyle = "red";
+canvasCtx.lineWidth = 2; 
+canvasCtx.stroke(); 
+}
+}
+*/
+
+//////////////////////////////////////////////////////////
+
+
+//FOR THE AUDIO =========================================
+var audioFile = document.getElementById("audioPlayer");
+var fileURL;
+var audioCtx = new AudioContext();
+var analyser = audioCtx.createAnalyser();
+var buf;
+var source = audioCtx.createBufferSource();
+var bufferLength = analyser.frequencyBinCount;
+var dataArray = new Uint8Array(bufferLength);
+
+function loadFile(){
+
+var request = new XMLHttpRequest();
+	request.open("GET", fileURL, true);
+	request.responseType = 'arraybuffer';
+	request.onload = function(){
+	//decode loaded data
+	audioCtx.decodeAudioData(request.response, function(buffer){
+		buf = buffer;
+		source.buffer = buf;
+		source.connect(analyser);
+		source.connect(audioCtx.destination);
+		});
+		}
+	request.send();
+}
+
+
+/////////////// FOR PAINTING AUDIO
+var degree = 0;
+
+function draw(){
+canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+canvasCtx2.clearRect(0, 0, canvas.width, canvas.height);
+canvasCtx3.clearRect(0, 0, canvas.width, canvas.height);
+canvasCtx4.clearRect(0, 0, canvas.width, canvas.height);
+
+animation = requestAnimationFrame(draw); //recursion?
+analyser.getByteTimeDomainData(dataArray);
+canvasCtx.lineJoin = 'round';
+canvasCtx.lineWidth = 5;
+//canvasCtx.strokeStyle = 'rgb(0,122,122)';
+
+
+var sliceWidth = canvas.width / bufferLength;
+var x = 0; //keeps track of sliceWidths - the x coordinate of each segment of the wave
+
+var colorLimit = Math.random()*(220-200) + 200;
+
+for(i=0;i<bufferLength;i++){
+	var v = dataArray[i] / 128.0; //dataArray here holds the actual audio data!
+	
+	//make lines
+	var y = v * canvas.height/2;
+	 
+	canvasCtx.beginPath();	
+	canvasCtx2.beginPath();
+	canvasCtx3.beginPath();
+	canvasCtx4.beginPath();
+	
+	var xPos = canvas2.width / 2;//Math.floor(Math.random()*canvas2.width);
+	var yPos = canvas.height / 2;//Math.floor(Math.random()*canvas2.height);
+
+	if(i === 0){
+		canvasCtx.moveTo(x, y);  
+		canvasCtx2.moveTo(xPos, yPos);		
+		canvasCtx3.moveTo(xPos, yPos);
+	}else{                                    
+		canvasCtx.lineTo(x, y);
+		canvasCtx2.lineTo(xPos, yPos + Math.sin(startAngle)*(Math.random()*(canvas2.height/2)));
+		canvasCtx3.lineTo(xPos + Math.cos(startAngle)*(Math.random()*(canvas2.width/2)), yPos + Math.sin(startAngle)*(Math.random()*(canvas2.height/2)));
+	}
+	
+	var canvas4endpoint;
+	
+	//change color based on dataArray info
+	var r, g, b;
+	if(dataArray[i] < 110){
+		r = Math.floor(Math.random()*100);
+		g = Math.floor(Math.random()*50);
+		b = Math.floor(Math.random()*200);
+		canvasCtx2.lineWidth = v/3;
+		canvasCtx3.lineWidth = v/3;
+		
+		canvas4endpoint =  Math.random()*(100-10)+10;
+		canvasCtx4.moveTo(canvas4endpoint, 0);
+		canvasCtx4.lineTo(canvas4endpoint, Math.random()*200);
+		canvasCtx4.lineWidth = Math.random()*(10-5) + 5;
+		degree++;
+	}else if(dataArray[i] < 170 && dataArray[i] > 100){
+		r = Math.floor(Math.random()*250);
+		g = Math.floor(Math.random()*180);
+		b = Math.floor(Math.random()*240);
+		canvasCtx2.lineWidth = v/5;
+		canvasCtx3.lineWidth = v/5;
+		
+		canvas4endpoint = Math.random()*(300-100)+100;
+		canvasCtx4.moveTo(canvas4endpoint, 0);
+		canvasCtx4.lineTo(canvas4endpoint, Math.random()*400);
+		canvasCtx4.lineWidth = Math.random()*(20-10) + 10;
+		degree++;
+	}else{
+		r = colorLimit;
+		g = colorLimit;
+		b = colorLimit;
+		canvasCtx2.lineWidth = 1;
+		canvasCtx3.lineWidth = 1;
+		
+		canvas4endpoint = Math.random()*(600-300)+300;
+		canvasCtx4.moveTo(canvas4endpoint, 0);
+		canvasCtx4.lineTo(canvas4endpoint, Math.random()*600);
+		canvasCtx4.lineWidth = Math.random()*(20-15) + 15;
+		degree--;
+	}
+	colorStr = 'rgb(' + r + ',' + g + ',' + b + ')';
+	x += sliceWidth;
+	
+	canvasCtx.lineTo(x, y+1);
+	canvasCtx.strokeStyle = colorStr;
+	canvasCtx.closePath();
+	canvasCtx.stroke();
+	
+	//for CANVAS 2 
+	var startAngle = degree*Math.PI / 180;
+	if(degree == 360){
+		degree = 0;
+	}
+	canvasCtx2.lineTo(xPos + Math.cos(startAngle)*(canvas2.width/2), yPos + Math.sin(startAngle)*(canvas2.height/2));
+	canvasCtx3.lineTo(xPos + Math.cos(startAngle)*(Math.random()*(canvas2.width/2)), yPos + Math.sin(startAngle)*(Math.random()*(canvas2.height/2)));
+		
+	canvasCtx2.lineJoin = 'round';
+	canvasCtx2.strokeStyle = colorStr;
+	canvasCtx2.closePath();
+	canvasCtx2.stroke();
+	
+	canvasCtx3.lineJoin = 'bevel';
+	canvasCtx3.strokeStyle = colorStr;
+	canvasCtx3.closePath();
+	canvasCtx3.stroke();
+	
+	//canvasCtx4.lineTo(Math.random()*canvas4.width, canvas4endpoint);
+	canvasCtx4.lineJoin = 'bevel';
+	canvasCtx4.strokeStyle = colorStr;
+	canvasCtx4.closePath();
+	canvasCtx4.stroke();
+	
+	//degree++;
+	}//end for loop
+
+}
+
+////////////////////////// PLAYYYYYYY
+
+function playAudio(){
+analyser.getByteFrequencyData(dataArray);
+source.start(0);
+draw();
+}
+
+function stopAudio(){
+cancelAnimationFrame(animation);
+source.stop(0);
+source = audioCtx.createBufferSource();
+loadFile();
+}
+
+
+//****************** IMPORT IMAGE CODE ***********************
+var audioText = document.getElementById("audioText");
+
+var openFile = (function(){
+return function(c){
+	var fileInput = document.querySelector("#fileInput");
+   
+	function onFileChange(e){
+	var files = e.target.files;
+	if(files && files.length>0) //if a file has been selected
+	   c(files)//do some function (defined by c) to that file
+	}
+	fileInput.addEventListener("change", onFileChange, false);
+	fileInput.click(); 
+}
+})();
+
+
+function handleFile(files){
+var file = files[0];
+fileURL = URL.createObjectURL(file);
+var type = /audio.*/;
+if(!file.type.match(type)){
+	return;
+}
+
+var reader = new FileReader();
+
+reader.onload = (function(file){  
+	return function(evt){
+		audioFile.src = evt.target.result;
+		audioText.innerHTML = file.name;
+	}
+})(file); 
+
+reader.readAsDataURL(file);
+loadFile();
+}
+
+</script>
+
+
+</html>
