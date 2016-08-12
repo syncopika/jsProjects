@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<title>audio visualizer 2</title>
+	<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="https://d3js.org/d3-color.v1.min.js"></script>
+	<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+</head>
+
+<style>
+
+.chart, .chart3{
+display: block;
+margin: 0 auto;
+border: #000000 solid 1px;
+}
+
+.chart rect{
+	fill: steelblue;
+}
+
+.chart text{
+	fill: white;
+	font: 10px sans-serif;
+	text-anchor: end;
+}
+
+#theCanvas{
+display: block;
+margin:0 auto;
+border: 1px solid black;
+}
+
+h2, h3{
+text-align:center;
+font-family: 'Roboto', sans-serif;
+}
+
+ul, #audioPlayer{
+display: block;
+margin:10px auto;
+text-align:center;
+}
+
+li{
+display: inline-block;
+list-style-type: none;
+}
+
+#audioText{
+text-align:center;
+}
+
+.axis path, line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+/*to be able to toggle different fill types and stuff, set it to blank initially! */
+.line{ 
+    stroke: ;
+    stroke-width: ;
+    fill: ;
+}
+
+.button{
+	text-align:center;
+}
+</style>
+
+
+<body>
+<h2>audio visualizer 2</h2>
+
+	<h3>bar chart looking at frequency data</h3>
+	<svg class='chart'>
+	</svg>
+	
+	<h3>different interpretation of frequency<h3>
+	<svg class='chart2'>
+	</svg>
+	
+	<div class='button'>
+	<button class='btn' id='changeView' onclick='changeView()'>change view </button>
+	</div>
+	
+	<h3>an interpretation of time-domain waveforms as a pie chart...</h3>
+	<svg class='chart3'>
+	</svg>
+	
+	<h3>looking at waveforms (time-domain)</h3>
+	<canvas id="theCanvas" width="1200" height="400"></canvas>
+	<audio id="audioPlayer"  controls preload='auto'></audio>
+
+		<ul>
+			<li><button id='importMusic' class='btn' onclick='openFile(handleFile)'>import music</button></li>
+			<input id="fileInput" style="display:none;" type="file">
+			<li><button id='playMusic' class='btn' onclick="playAudio()">play music</button></li>
+			<li><button id='playMusic' class='btn' onclick="stopAudio()">stop music</button></li>
+		</ul>
+
+		<p id="audioText"></p>
+</body>
+
+<script>
+var data = new Uint8Array(100);
+
+var width = 1200,
+	height = 400;
+
+/******** SET UP CHART FIRST!! *********/
+var chart = d3.select(".chart")
+	.attr("width", width)
+	.attr("height", height);
+
+var y = d3.scaleLinear()
+	.domain([0, 200])
+	.range([height, 0]);
+	
+var barWidth = width / data.length;	
+
+//bar holds all the g elements of a svg
+var bar = chart.selectAll("g")
+	.data(data)
+	//append a new bar for each data point
+	.enter()
+	.append("g")
+
+	//this creates the bars that you see (a 'rect' element)
+	bar.append("rect")
+	//the attribute for x dictates where to place the column relative to the corner where (0,0) is I think
+	.attr("x", function(d, i){ return i * (width/data.length)})
+	//this sets width of each column
+	.attr("width", barWidth - 1); //- 1 gives the white border
+
+//it's important to make a variable here, so that you can use it to update text as the data changes
+//you shouldn't use selectAll("g") top update text because any changes will be applied to ALL of the data points.
+//each data point's text is modified through this variable
+var text = bar.append("text")
+	.text(function(d){ return d;})
+	.attr("x", function(d, i){ return i * (width/data.length)})
+	.attr("dy", ".25em")
+	
+
+/******** SET UP CHART 2 FIRST!! *********/
+//set up margins
+var margin = {top: 20, right: 10, bottom: 30, left: 15};
+
+var chart2width = 1200 - margin.left - margin.right;
+var chart2height = 400 - margin.top - margin.bottom;
+
+var chart2 = d3.select(".chart2")
+	.attr("width", width)
+	.attr("height", height)
+	.append("g")
+	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var x = d3.scaleLinear()
+	.domain([0, data.length])
+	.range([0, chart2width]);
+	
+var chart2y = d3.scaleLinear()
+	.domain([0, 300])
+	.range([chart2height, 0]);
+
+var line = d3.line()
+	.x(function(d, i){return x(i)})
+	.y(function(d){return chart2y(d)})
+	.curve(d3.curveCatmullRom.alpha(0.5));
+	
+var yAxis = d3.axisLeft(chart2y);
+yAxis.scale(chart2y);
+//yAxis.ticks(20);
+
+var xAxis = d3.axisBottom(x);
+xAxis.scale(x);
+//xAxis.ticks(data.length/2);
+
+//add a g element to serve as an axis
+chart2.append("g")
+	.attr("class", "x axis")
+	.attr("transform", "translate(0," + chart2height + ")")
+	.call(xAxis);
+
+chart2.append("g")
+	.attr("class", "y axis")
+	.attr("transform", "translate(0,0)")
+	.call(yAxis);
+	
+var path = chart2.append("path")
+			.datum(data)
+			.attr("class", "line")
+			.attr("d", line);
+	
+//change view button
+var changeFlag = 1;
+function changeView(){
+	if(changeFlag === 0){
+	$('.line').css({'stroke':'', 'stroke-width':'', 'fill':''});
+	changeFlag = 1;
+	}else{
+	//$('.line').css({'stroke': 'rgb(' + Math.floor(color) + ',' +  Math.floor(color) + ',' +  Math.floor(color) + ')', 'stroke-width': '2', 'fill': 'none'});	
+	changeFlag = 0;
+	}
+}
+
+//this function affects the second chart
+function changeColor(color){
+if(changeFlag === 1){
+$('.line').css({'stroke': 'rgb(' + Math.floor(color)*2 + ',' +  Math.floor(color)*2 + ',' +  Math.floor(color)*3 + ')', 'stroke-width': '2', 'fill': 'none'});	
+}else{
+$('.line').css({'stroke':'', 'stroke-width':'', 'fill':''});
+}
+}
+
+/******** SET UP CHART 3 FIRST!! *********/
+var data3 = new Uint8Array(100);
+
+var chart3 = d3.select('.chart3')
+	.attr("width", width)
+	.attr("height", height)
+	.append("g")
+	.attr("transform", "translate(" + (width/2) +"," + (height/2) +")");
+
+var radius = Math.min(height, width);
+var color3 = d3.scaleOrdinal(d3.schemePastel1);
+
+var arc = d3.arc()
+	.outerRadius(radius + 10)
+	.innerRadius(radius/2)
+	.padAngle(0.03);
+
+var padAngle = .03;
+var pie = d3.pie()
+	.value(function(d){
+		if((d>95 && d<110) || radius <= 0){
+			radius += 2;
+			return d*6;
+		}else if((d>115 && d<130) || radius > height){
+			radius -= 1;
+			return d*3;
+		}else{
+			//radius = height/2;
+			return d;
+		}
+		})
+	.sort(null);
+//gset up data to be split into arcs
+//var arcs = d3.pie()(data3);
+
+//now set up a 'g' element for each arc
+//each element will have a class of "arc"
+var path3 = chart3.selectAll("path")
+		.data(pie(data3))
+		.enter()
+		.append("path")
+		.attr("d", arc)
+		.attr('fill', function(d, i){ return color3(i)});
+
+	
+/********* THEN USE UPDATE FUNCTION **************/
+function update(){
+var color;
+requestAnimationFrame(update);
+
+//get streaming data! (the data array is updated each call to update())
+analyser.getByteFrequencyData(data);
+analyser.getByteTimeDomainData(data3);
+
+//this is the bar that you see
+chart.selectAll("rect")
+	.data(data)
+	//the attribute for y makes the columns vertical, with the base at the bottom, rather than the top
+	.attr("y", function(d){return height - d})
+	.attr("height", function(d){ return d});
+
+text
+	.data(data)
+	//get the color here to change line color for chart 2
+	.text(function(d){color = d/3; changeColor(color); return d;})
+	.attr("y", function(d){ return height - d/2});
+
+//for chart 2
+//datum is for multiple g elements
+path
+	.datum(data)
+	.attr("class", "line")
+	.attr("d", line);
+
+//for chart 3
+arc
+	.outerRadius(radius + 15);
+	//.padAngle(padAngle);
+	
+path3
+	.data(pie(data3))
+	.attr("d", arc)
+	.style("fill", function(d, i){return color3(i)});
+	
+}
+
+//FOR THE CANVAS ==========================================
+var canvas = document.getElementById("theCanvas");
+var canvasCtx = canvas.getContext("2d");
+
+//////////////////////////////////////////////////////////
+//FOR THE AUDIO =========================================
+var audioFile = document.getElementById("audioPlayer");
+var fileURL;
+var audioCtx = new AudioContext();
+var analyser = audioCtx.createAnalyser();
+var buf;
+var source;
+
+var bufferLength = analyser.frequencyBinCount;
+var dataArray = new Uint8Array(bufferLength);
+
+function loadFile(){
+
+//for chart3, reset radius. it accumulates, so it could be negative at the end of a playthrough.
+radius = height;
+
+source = audioCtx.createBufferSource();
+
+var request = new XMLHttpRequest();
+	request.open("GET", fileURL, true);
+	request.responseType = 'arraybuffer';
+	request.onload = function(){
+	//decode loaded data
+	audioCtx.decodeAudioData(request.response, function(buffer){
+		buf = buffer;
+		source.buffer = buf;
+		source.connect(analyser);
+		});
+		}
+	request.send();
+}
+
+
+/////////////// FOR PAINTING AUDIO
+
+function draw(){
+
+canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+drawVisual = requestAnimationFrame(draw); //recursion?
+analyser.getByteTimeDomainData(dataArray);
+canvasCtx.lineWidth = 2;
+canvasCtx.strokeStyle = 'rgb(0,122,122)';
+canvasCtx.beginPath();
+var sliceWidth = canvas.width / bufferLength;
+var x = 0; //keeps track of sliceWidths - the x coordinate of each segment of the wave
+
+for(i=0;i<bufferLength;i++){
+	
+	var v = dataArray[i] / 128.0;
+	var y = v * canvas.height/2;
+	
+	if(i === 0){
+		canvasCtx.moveTo(x,y);
+	}else{
+		canvasCtx.lineTo(x,y);
+	}
+	x += sliceWidth;
+}
+
+canvasCtx.lineTo(canvas.width, canvas.height/2);
+canvasCtx.stroke();
+}
+
+////////////////////////// PLAYYYYYYY
+
+function playAudio(){
+
+analyser.getByteFrequencyData(dataArray);
+analyser.getByteFrequencyData(data);
+analyser.getByteFrequencyData(data3);
+
+source.connect(audioCtx.destination);
+source.start(0);
+draw();
+update();
+}
+
+function stopAudio(){
+source.stop(0);
+loadFile();
+}
+
+//****************** IMPORT AUDIO CODE ***********************
+var audioText = document.getElementById("audioText");
+
+var openFile = (function(){
+return function(c){
+	var fileInput = document.querySelector("#fileInput");
+   
+	function onFileChange(e){
+	var files = e.target.files;
+	if(files && files.length>0) //if a file has been selected
+	   c(files)//do some function (defined by c) to that file
+	}
+	fileInput.addEventListener("change", onFileChange, false);
+	fileInput.click(); 
+}
+})();
+
+
+function handleFile(files){
+var file = files[0];
+fileURL = URL.createObjectURL(file);
+var type = /audio.*/;
+if(!file.type.match(type)){
+	return;
+}
+
+var reader = new FileReader();
+
+reader.onload = (function(file){  
+	return function(evt){
+		audioFile.src = evt.target.result;
+		audioText.innerHTML = file.name;
+	}
+})(file); 
+
+reader.readAsDataURL(file);
+loadFile();
+}
+
+</script>
+
+
+</html>
