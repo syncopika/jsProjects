@@ -2,7 +2,6 @@
 
 <html>
 
-
 <head>
 	<title>audio visualizer</title>
 	<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
@@ -42,7 +41,7 @@ text-align:center;
 
 
 <body>
-<h2>audio visualizer</h2>
+<h2>audio visualizer </h2>
 
 <div class='row'>
 	<div class='col-md-offset-2 col-md-8'>
@@ -116,11 +115,13 @@ var fileURL;
 var audioCtx = new AudioContext();
 var analyser = audioCtx.createAnalyser();
 var buf;
-var source = audioCtx.createBufferSource();
+var source; 
 var bufferLength = analyser.frequencyBinCount;
 var dataArray = new Uint8Array(bufferLength);
 
 function loadFile(){
+
+source = audioCtx.createBufferSource();
 
 var request = new XMLHttpRequest();
 	request.open("GET", fileURL, true);
@@ -147,38 +148,37 @@ canvasCtx2.clearRect(0, 0, canvas.width, canvas.height);
 canvasCtx3.clearRect(0, 0, canvas.width, canvas.height);
 canvasCtx4.clearRect(0, 0, canvas.width, canvas.height);
 
-animation = requestAnimationFrame(draw); //recursion?
+animation = requestAnimationFrame(draw); 
 analyser.getByteTimeDomainData(dataArray);
 canvasCtx.lineJoin = 'round';
 canvasCtx.lineWidth = 5;
 //canvasCtx.strokeStyle = 'rgb(0,122,122)';
 
-
+var colorLimit = Math.random()*(220-200) + 200;
 var sliceWidth = canvas.width / bufferLength;
 var x = 0; //keeps track of sliceWidths - the x coordinate of each segment of the wave
-
-var colorLimit = Math.random()*(220-200) + 200;
 
 for(i=0;i<bufferLength;i++){
 	var v = dataArray[i] / 128.0; //dataArray here holds the actual audio data!
 	
-	//make lines
+	//set y position to be proportional to the data point
 	var y = v * canvas.height/2;
 	 
-	canvasCtx.beginPath();	
+	//by beginning a new path each iteration, you can form dots instead of a continuous line.
+	canvasCtx.beginPath();
+	canvasCtx.moveTo(x, y);	
+	
 	canvasCtx2.beginPath();
 	canvasCtx3.beginPath();
 	canvasCtx4.beginPath();
 	
-	var xPos = canvas2.width / 2;//Math.floor(Math.random()*canvas2.width);
-	var yPos = canvas.height / 2;//Math.floor(Math.random()*canvas2.height);
-
+	var xPos = canvas2.width / 2;
+	var yPos = canvas.height / 2;
+	
 	if(i === 0){
-		canvasCtx.moveTo(x, y);  
 		canvasCtx2.moveTo(xPos, yPos);		
 		canvasCtx3.moveTo(xPos, yPos);
-	}else{                                    
-		canvasCtx.lineTo(x, y);
+	}else{
 		canvasCtx2.lineTo(xPos, yPos + Math.sin(startAngle)*(Math.random()*(canvas2.height/2)));
 		canvasCtx3.lineTo(xPos + Math.cos(startAngle)*(Math.random()*(canvas2.width/2)), yPos + Math.sin(startAngle)*(Math.random()*(canvas2.height/2)));
 	}
@@ -225,14 +225,15 @@ for(i=0;i<bufferLength;i++){
 		degree--;
 	}
 	colorStr = 'rgb(' + r + ',' + g + ',' + b + ')';
-	x += sliceWidth;
 	
 	canvasCtx.lineTo(x, y+1);
 	canvasCtx.strokeStyle = colorStr;
 	canvasCtx.closePath();
 	canvasCtx.stroke();
 	
-	//for CANVAS 2 
+	x += sliceWidth;
+	
+	//for CANVAS 2 and 3
 	var startAngle = degree*Math.PI / 180;
 	if(degree == 360){
 		degree = 0;
@@ -250,13 +251,11 @@ for(i=0;i<bufferLength;i++){
 	canvasCtx3.closePath();
 	canvasCtx3.stroke();
 	
-	//canvasCtx4.lineTo(Math.random()*canvas4.width, canvas4endpoint);
 	canvasCtx4.lineJoin = 'bevel';
 	canvasCtx4.strokeStyle = colorStr;
 	canvasCtx4.closePath();
 	canvasCtx4.stroke();
 	
-	//degree++;
 	}//end for loop
 
 }
@@ -272,12 +271,11 @@ draw();
 function stopAudio(){
 cancelAnimationFrame(animation);
 source.stop(0);
-source = audioCtx.createBufferSource();
 loadFile();
 }
 
 
-//****************** IMPORT IMAGE CODE ***********************
+//****************** IMPORT AUDIO CODE ***********************
 var audioText = document.getElementById("audioText");
 
 var openFile = (function(){
