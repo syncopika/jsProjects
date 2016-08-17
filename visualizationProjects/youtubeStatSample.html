@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<title>data visualisation with d3</title>
+	<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="https://d3js.org/d3-color.v1.min.js"></script>
+	<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+	<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	
+	<style>
+	.chart1, .chart3, .chart5{
+	display: block;
+	float: right;
+	}
+	
+	.chart2, .chart4{
+	display: block;
+	margin: 0 auto;
+	}
+	
+	h2{
+		text-align: center;
+		font-size: 28px;
+		text-align:center;
+	}
+	
+	h3{
+		text-align: center;
+	}
+	
+	p{
+		text-align: center;
+	}
+	
+	.chart1 rect{
+		fill: #DF0000;
+	}
+	
+	.chart1 rect:hover{
+		fill: #DFF000;
+	}
+	
+	.chart2 .slice path:hover{
+		fill: #DFF000;
+	}
+	
+	.y .label{
+		color: #000000;
+		font-weight: 700;
+	}
+	
+	.xAxis text{
+		opacity: .9;
+	}
+	
+	.xAxis text:hover{
+		opacity: 1;
+		fill: #000000;
+	}
+	
+	.footer{
+		height: 30px;
+	}
+	
+ .chart6 g .line{
+  fill: none;
+  stroke: steelblue;
+}
+	
+	</style>
+	
+</head>
+
+<body>
+<div class='container-fluid'>
+	
+	<div class='row'>
+	<h2>assorted YouTube data from 07-11-16 to 08-07-16</h2>
+	
+		<div class='col-md-6'>
+			<h2>play time vs. country </h2>
+			<p>only countries with a watch time of at least 1 minute were accounted for</p>
+			<p>high: 919, low: 1 ; total: 1411 minutes</p>
+			<svg class='chart1'>
+			</svg>
+		</div>
+		
+		<div class='col-md-6'>
+			<h2>play time vs. country</h2>
+			<p>hover over each slice to get more info!</p>
+			<svg class='chart2'>
+			</svg>
+			<h3 id='info'></h3>
+		</div>
+		
+	</div>
+	
+	
+	<div class='row'>
+		<div class='col-md-6'>
+			<!-- add option to toggle between gender -->
+			<h2> watch time vs. age group</h2>
+			<p>total time watched: 1411 minutes</p>
+			<svg class='chart3'>
+			</svg>
+		</div>
+		
+		<div class='col-md-6'>
+			<h2>watch time vs. age group </h2>
+			<svg class='chart4'>
+			</svg>
+			<h3 id='info2'></h3>
+		</div>
+	</div>
+	
+	<div class='row'>
+		<div class='col-md-6'>
+			<!-- add option to toggle between gender -->
+			<h2> audience retention vs. country</h2>
+			<p>total time watched: 1411 minutes</p>
+			<svg class='chart5'>
+			</svg>
+			<p><b>commentary:</b> as you can see, some countries have a high average view duration (or audience retention), 
+			but low total watched minutes. For example, viewers from Japan contributed the highest amount of minutes watched,
+			but this was probably due to a large number of people watching for a few seconds each. In contrast, the minutes contributed by Malaysia
+			were significantly lower than Japan; however, at least some of its viewers spent a good amount of time watching a particular video, rather than just a few seconds.
+			Thank you to all who viewed my videos!!
+			</p>
+		</div>
+		
+		<div class='col-md-6'>
+			<h2>time watched per day from 07-11-16 to 08-07-16</h2>
+			<svg class='chart6'>
+			</svg>
+		</div>
+	</div>
+	
+	<div class='row footer'>
+	</div>
+
+</div>	
+</body>
+
+<script>
+
+var margin = {top: 20, right: 20, bottom: 95, left: 50};
+var width = 850 - margin.left - margin.right;
+var height = 350 - margin.top - margin.bottom;
+//var barHeight;
+/****** SET　UP CHART 1 ******/
+//playTime vs. country
+
+var chart = d3.select(".chart1")
+	.attr("width", width + margin.left + margin.right)
+	.attr("height", height + margin.top + margin.bottom)
+	.append("g")
+	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var xChart1 = d3.scaleBand()
+				.range([0, width]);
+				
+var yChart1 = d3.scaleLinear()
+				.range([height, 0]);
+
+var xAxis = d3.axisBottom(xChart1);
+var yAxis = d3.axisLeft(yChart1);
+			
+
+//for data, just make a new hash with: key => country, value => play time
+//used for both chart1 and chart2
+var sortedData = [];
+var avgDuration = [];
+var playDate = [];
+
+/*** GET DATA FOR PLAYBACK LOCATION AND MINUTES ***/
+d3.csv("playbackLocation.csv", function(data){
+
+	//sort through data
+	var dataMap = {};
+	var duraMap = {};
+	var dateMap = {};
+	
+	for(var i = 0; i < data.length; i++){
+		
+		var country = data[i]["country_name"];
+		var date = data[i]["date"];
+		var watchTime = parseInt(data[i]["watch_time_minutes"]);
+
+		//this is for chart 1
+		//if there is a new country not in the set, and the watch time > 0
+		if(dataMap[country] === undefined && watchTime > 0){
+			dataMap[country] = watchTime;
+		}else if(dataMap[country] !== undefined && watchTime > 0){
+			dataMap[country] += watchTime;
+		}
+		
+		//this is for chart 5
+		var duration = parseFloat(data[i].average_view_duration);
+		if(duraMap[country] === undefined && duration > 0.0){
+			duraMap[country] = duration;
+		}else if(duration > 0){
+			duraMap[country] += duration;
+		}
+		
+		//this is for chart 6
+		if(dateMap[date] === undefined && watchTime > 0){
+			dateMap[date] = watchTime;
+		}else if(watchTime > 0){
+			dateMap[date] += watchTime;
+		}
+	}
+	
+	for(country in dataMap){
+		var newHash = {};
+		newHash["country"] = country;
+		newHash["value"] = dataMap[country];
+		sortedData.push(newHash);
+	}
+	
+	//this is for chart 5 (avg view duration per country)
+	for(country in duraMap){
+		//find out how many times each country shows up in the data
+		var counter = 0;
+		data.forEach(function(i){if(i.country_name === country){ counter++ } });
+		
+		var newHash = {};
+		newHash["country"] = country; 
+		newHash["value"] = duraMap[country] / counter;
+		avgDuration.push(newHash);
+	}
+	
+	//this is for chart 6
+	for(date in dateMap){
+		var newHash = {};
+		newHash["date"] = new Date(date);
+		newHash["value"] = dateMap[date];
+		playDate.push(newHash);
+	}
+	
+	//console.log(playDate);
+	sortedData = sortedData.sort(function(a, b){if(a.value > b.value){return -1}else{return 1}});
+		
+	//data should be all set up now
+	var barWidth = width / sortedData.length;
+	
+	//set domain for the y and x axis 
+	yChart1.domain([0, d3.max(sortedData, function(d){ return d.value; })]);
+	xChart1.domain(sortedData.map(function(d){ return d.country }));
+	
+	//now set up chart
+	
+	var bar = chart.selectAll("g")
+					.data(sortedData)
+					.enter()
+					.append("g")
+					.attr("transform", function(d, i){
+						return "translate(" + i * barWidth + ",0)";
+					});
+		
+		bar.append("rect")
+			.attr("y", function(d){ return yChart1(d.value); })
+			.attr("height", function(d){ return height - yChart1(d.value); })
+			.attr("width", barWidth - 1);
+			
+	//append axes at the end. for some reason I lost some data appending the axes first (before declaring var "bar")
+	
+	//add left axis
+	chart.append("g")
+		.attr("class", "y axis")
+		.call(yAxis);
+		
+	chart
+	  .append("text")
+		.attr("transform", "translate(" + (-38) +  "," + (height+margin.bottom)/2 + ") rotate(-90)")
+		.text("time (minutes)");
+	
+	//add bottom axis
+	chart.append("g")
+		.attr("class", "xAxis")
+		//put the x axis at the bottom
+		.attr("transform", "translate(0," + height + ")")
+		.call(xAxis)
+		.selectAll("text")
+			.style("text-anchor", "end")
+			.attr("dx", "-.8em")
+			.attr("dy", ".15em")
+			.attr("transform", function(d){
+				return "rotate(-65)";
+			});
+			
+	/* unnecessary?
+	chart
+		.append("text")
+		.attr("transform", "translate(" + (width)/2 + "," + (height+margin.bottom-2) + ")")
+		.text("country");
+	*/
+
+/****** END CHART 1 ******/	
+	
+/****** SET UP CHART 2 ******/
+var chart2height = 400;
+var chart2width = 500;
+var radius = Math.min(chart2height, chart2width) / 2;
+
+//console.log(sortedData);
+
+var chart2 = d3.select(".chart2")
+				//remember: order in which you assign attributions matter!
+				//i.e. if you separately attribute width and height (chart2.attr(..))
+				//the pie chart gets cut off. 
+				.attr("width", chart2width)
+				.attr("height", chart2height)
+				.append("g")
+				.attr("transform", "translate(" + chart2width / 2 + "," + chart2height / 2 +")");
+
+
+//set up arc (path element for each data point)
+var arc = d3.arc()
+			.outerRadius(radius)
+			.innerRadius(0)
+			.padAngle(0);
+
+var pie = d3.pie()
+			.sort(null)
+			.value(function(d){ return d.value});
+
+//make the data slices
+//console.log(sortedData);
+var arcs = chart2.selectAll("g.slice")
+				.data(pie(sortedData))
+				.enter()
+					.append("g")
+						.attr("class", "slice")
+						.attr("country", function(d, i){ return sortedData[i].country })
+						.attr("value", function(d){ return d.value });
+				
+	arcs.append("path")
+		.attr("d", arc)
+		//.attr("fill", "steelblue");
+		.attr("fill", function(d, i){ return d3.interpolateRdBu( .1*i  )});
+
+$('.slice').hover(function(){
+	//console.log("hi");
+	$('#info').html( "country: " + $(this).attr("country") + ", minutes: " + $(this).attr("value") );
+}, function(){
+	//on mouseout
+	$('#info').html("");
+}
+);
+
+/****** END CHART 2 ******/
+
+
+/******** SET UP CHART 5 *********/
+var chart5 = d3.select('.chart5')
+				.attr('height', height + margin.top + margin.bottom)
+				.attr('width', width + margin.left + margin.right)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var xChart5 = d3.scaleBand()
+				.range([0, width])
+				.domain(avgDuration.map(function(d){ return d.country }));
+				
+var yChart5 = d3.scaleLinear()
+				.range([height, 0])
+				.domain([0, d3.max(avgDuration, function(d){ return d.value }) ]);
+				
+var xAxis5 = d3.axisBottom(xChart5);
+var yAxis5 = d3.axisLeft(yChart5);
+
+
+var barWidth = width / avgDuration.length;
+
+var bar = chart5.selectAll("g")
+				.data(avgDuration)
+				.enter()
+				.append("g")
+				.attr("transform", function(d, i){ return "translate(" + i*barWidth + ",0)" });
+
+	bar.append("rect")
+		.attr("y", function(d){ return yChart5(d.value) })
+		.attr("height", function(d){ return height - yChart5(d.value);})
+		.attr("width", barWidth - 1)
+		.attr("fill", "#AAAFFF");
+
+chart5.append("g")
+	  .attr("class", "x axis")
+	  .attr("transform", "translate(0," + (height) + ")")
+	  .call(xAxis5)
+	  .selectAll("text")
+			.style("text-anchor", "end")
+			.attr("dx", "-.8em")
+			.attr("dy", ".15em")
+			.attr("transform", function(d){
+				return "rotate(-65)";
+			});
+	  
+chart5.append("g")
+		.attr("class", "y axis")
+		.call(yAxis5);
+
+chart5
+	  .append("text")
+	  .attr("transform", "translate(" + (-38) + "," + (height) + ") rotate(-90)" )
+	  .text("average minutes watched per view");
+
+
+/****** CHART 6 *********/	 
+var width6 = 850 - margin.left - margin.right;
+var height6 = 400 - margin.top - margin.bottom;
+var formatDate = d3.timeFormat("%Y-%m-%d");
+//console.log(playDate); 
+//this one is a line graph!!
+  
+var chart6 = d3.select('.chart6')
+				.attr("height", height6 + margin.top + margin.bottom)
+				.attr("width", width6 + margin.left + margin.right)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+//var stDt = (formatDate(playDate[0].date)).split('-').map(function(i){ return parseInt(i) });
+//var enDt = (formatDate(playDate[playDate.length-1].date)).split('-').map(function(i){ return parseInt(i) });
+
+var xChart6 = d3.scaleTime()
+				.range([0, width6])
+				//nice-ifying the domain lines up the ticks and the data points!
+				.domain( d3.extent(playDate, function(d){ return d.date}) ).nice();
+
+var yChart6 = d3.scaleLinear()
+				.range([height6, 0])
+				.domain([0, d3.max(playDate, function(d){ return d.value }) ]);
+
+var xAxis6 = d3.axisBottom(xChart6)	
+				.ticks(playDate.length)
+				.tickFormat(formatDate);
+				
+var yAxis6 = d3.axisLeft(yChart6);
+
+var line = d3.line()
+			.x(function(d){ return xChart6( d.date ) })
+			.y(function(d){ return yChart6( d.value )});
+
+chart6.append("path")
+	  .data([playDate])
+	  .attr("class", "line")
+	  .attr("d", line);
+	  
+
+//append axes to chart 6
+chart6.append("g")
+	 .attr("class", "xAxis6")
+	 .attr("transform", "translate(0" + "," + height6 + ")" )
+	 .call(xAxis6)
+	 .selectAll("text")
+			.style("text-anchor", "end")
+			.attr("dx", "-.8em")
+			.attr("dy", ".15em")
+			.attr("transform", function(d){
+				return "rotate(-65)";
+			});
+	 
+chart6.append("g")
+		.attr("transform", "translate(0,0)")
+		.attr("class", "yAxis6")
+		.call(yAxis6);
+		
+//make each data point a dot
+chart6.selectAll("circle")
+		.data(playDate)
+		.enter()
+		.append("circle")
+		.attr("r", 2)
+		.attr("cx", function(d){
+			return xChart6(d.date);
+		})
+		.attr("cy", function(d){
+			return yChart6( d.value );
+		});
+
+chart6.append("text")
+		.attr("transform", "translate(" + (-30) + "," + (height6/2) + ") rotate(-90)")
+		.text("time (min.)")
+	  
+}); //end of first CSV function!! 
+
+
+/*** GET DATA FOR DEMOGRAPHICS ***/
+
+/****** SET　UP CHART 3 ******/
+//make another bar graph.
+//age group => x axis, value => percentage (y axis)
+//use same width, height, and margins as chart 1
+
+var chart3 = d3.select(".chart3")
+				.attr("width", width + margin.left + margin.right)
+				.attr("height", height + margin.top + margin.bottom)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var xChart3 = d3.scaleBand()
+				.range([0, width]);
+				
+var yChart3 = d3.scaleLinear()
+				.range([height, 0]);
+
+var xAxis3 = d3.axisBottom(xChart3);
+var yAxis3 = d3.axisLeft(yChart3);
+
+var gender = 2;
+
+d3.csv("demographics.csv", function(data){
+	
+	//filter data first depending on gender selected
+	if(gender === 0){
+		var femaleData = [];
+		//get female data
+			for(var i = 0; i < data.length; i++){
+				if(data[i].viewer_gender === "FEMALE"){
+					femaleData.push(data[i]);
+				}
+			}
+			data = femaleData;
+	}else if(gender === 1){
+		var maleData = [];
+		//get male data
+			for(var i = 0; i < data.length; i++){
+				if(data[i].viewer_gender === "MALE"){
+					maleData.push(data[i]);
+				}
+			}
+			data = maleData;
+	}else{
+		var newData = [];
+		//alternate between female and male data
+			for(var i = 0; i < data.length; i++){
+				for(var j = i+1; j < data.length; j++){
+					if(data[i].viewer_age === data[j].viewer_age){
+						newData.push(data[i]);
+						newData.push(data[j]);
+					}
+				}
+			}
+		data = newData;
+	} 
+	
+	//set domain for the x axis
+	xChart3.domain(data.map(function(d){return d.viewer_age;}) );
+	//set domain for y axis
+	yChart3.domain( [0, d3.max(data, function(d){ return +d.watch_time_minutes; })] );
+	
+	//get the width of each bar 
+	var barWidth = width / data.length;
+	
+	//set up rectangles for each data point
+	var bar = chart3.selectAll("g")
+					.data(data)
+					.enter()
+					.append("g")
+					.attr("transform", function(d, i){ return "translate(" + i*barWidth + ",0)"; });
+	
+	//now actually give each rectangle the corresponding data
+	bar.append("rect")
+		.attr("y", function(d){ return yChart3( d.watch_time_minutes); })
+		.attr("height", function(d){ return height - yChart3(d.watch_time_minutes); })
+		.attr("width", barWidth - 1)
+		.attr("fill", function(d){ 
+			if(d.viewer_gender === "FEMALE"){
+				return "rgb(251,180,174)";
+			}else{
+				return "rgb(179,205,227)";
+			}
+		});
+		
+		
+	//left axis
+	chart3.append("g")
+		  .attr("class", "y axis")
+		  .call(yAxis3)
+		  
+	//bottom axis
+	chart3.append("g")
+		.attr("class", "xAxis")
+		.attr("transform", "translate(0," + height + ")")
+		.call(xAxis3)
+		.selectAll("text")
+			.style("text-anchor", "end")
+			.attr("dx", "-.8em")
+			.attr("dy", ".15em")
+			.attr("transform", function(d){
+				return "rotate(-65)";
+			});
+			
+	//add labels
+	chart3
+		.append("text")
+		.attr("transform", "translate(-35," +  (height+margin.bottom)/2 + ") rotate(-90)")
+		.text("% of total watch time");
+		
+	chart3
+		.append("text")
+		.attr("transform", "translate(" + (width/2) + "," + (height + margin.bottom - 5) + ")")
+		.text("age group");
+		
+/****** END CHART 3 ******/
+
+/********** CHART 4 *********/
+//use the above data to make a pie chart
+var chart4height = 400;
+var chart4width = 500;
+var radius = Math.min(chart4height, chart4width) / 2;
+var demoData = data;
+
+var chart4 = d3.select('.chart4')
+				.attr('height', chart4height)
+				.attr('width', chart4width)
+				.append("g")
+				.attr("transform", "translate(" + chart4width / 2 + "," + chart4height / 2 +")");
+				
+var arc4 = d3.arc()
+			.outerRadius(radius)
+			.innerRadius(radius/2)
+			.padAngle(.01);
+			
+var pie4 = d3.pie()
+			//.sort(null)
+			.value(function(d){ return d.watch_time_minutes});
+
+var arcs4 = chart4.selectAll("g.slice")
+				.data(pie4(data))
+				.enter()
+				.append("g")
+				.attr("class", "slice4")
+				.attr("gender", function(d){ return d.data.viewer_gender; })
+				.attr("age", function(d){ return d.data.viewer_age; })
+				.attr("value", function(d){ return d.data.watch_time_minutes; });
+	
+	arcs4.append("path")
+		.attr("d", arc4)
+		.attr("fill", function(d){
+			//console.log(d);
+			if(d.data.viewer_gender === "FEMALE"){
+				return "rgb(251,180,174)";
+			}else{
+				return "steelblue";
+			}
+			});//function(d, i){ return d3.interpolateRdYlGn(1/i)});
+	
+$('.slice4').hover(function(){
+//console.log($(this).attr("ageGroup"));
+	$('#info2').html("gender: " + $(this).attr("gender") + ", age group: " + $(this).attr("age") + ", % of viewership: " + $(this).attr("value"));
+},function(){
+	//on mouseout
+	$('#info2').html("");
+})
+	
+});
+</script>
+
+</html>
