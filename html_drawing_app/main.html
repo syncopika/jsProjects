@@ -335,19 +335,14 @@ $('#count').html(curPage);//make sure 0 shows up when page loads
 var showToolbar = false;
 
 function toggleToolbar(){
-if(!showToolbar){
-    $('#rightCol').css('transform', 'translateX(0)');
-
-	//$('#rightCol').show();
-
-	showToolbar = true;
-}else{
-	$('#rightCol').css('transform', 'translateX(-300%)');
-	//$('#rightCol').hide();
-	showToolbar = false;
+	if(!showToolbar){
+		$('#rightCol').css('transform', 'translateX(0)');
+		showToolbar = true;
+	}else{
+		$('#rightCol').css('transform', 'translateX(-300%)');
+		showToolbar = false;
+	}
 }
-}
-
 
 var lbrush = 0; 
 var curSize = 5;
@@ -370,8 +365,7 @@ function redraw(){
 		context.beginPath();
 		//this helps prevent dragging!!! 
 		if(clickDrag[i] && i){ 
-			context.moveTo(clickX[i-1], clickY[i-1]);//this might explain buggy crazy brush when copying a canvas. try changing the -1. 
-			//context.lineTo(clickX[i], clickY[i]);
+			context.moveTo(clickX[i-1], clickY[i-1]);
 		}else{
 			if(lbrush === 1){
 				cbrush = 0;
@@ -384,7 +378,6 @@ function redraw(){
 			}
 			else{
 				context.moveTo(clickX[i], clickY[i]+1);
-				//context.lineTo(clickX[i], clickY[i]);
 			}
 		}
   context.lineTo(clickX[i], clickY[i]);
@@ -454,7 +447,7 @@ $("#reset").click(function(){
 cbrush = 0;
 lbrush = 0;
 curSize = 5;
-curColor = '#000000'; //default color is black
+curColor = '#000000'; 
 });
 
 
@@ -544,8 +537,8 @@ if(curPage < page){
 	curPage = curPage + 1;
 	$('#count').html(curPage);
 	curCanvas = layerArray[curPage];
-	$('#' + curCanvas).css({"z-index":10, "opacity": .8}); //if canvas wasn't white, you could set this to 1. but if you keep a white background, curCanvas needs to be somewhat opaque.
-
+	//if canvas wasn't white, you could set this to 1. but if you keep a white background, curCanvas needs to be somewhat opaque.
+	$('#' + curCanvas).css({"z-index":10, "opacity": .8}); /
 	context = document.getElementById(curCanvas).getContext("2d");
 
 	for(i=0;i<layerArray.length;i++){
