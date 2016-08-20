@@ -538,7 +538,7 @@ if(curPage < page){
 	$('#count').html(curPage);
 	curCanvas = layerArray[curPage];
 	//if canvas wasn't white, you could set this to 1. but if you keep a white background, curCanvas needs to be somewhat opaque.
-	$('#' + curCanvas).css({"z-index":10, "opacity": .8}); /
+	$('#' + curCanvas).css({"z-index":10, "opacity": .8}); 
 	context = document.getElementById(curCanvas).getContext("2d");
 
 	for(i=0;i<layerArray.length;i++){
@@ -554,11 +554,12 @@ if(curPage < page){
 	$('#' + layerArray[curPage-1]).css({"z-index":0,"opacity":.6});
 }
 
-//reset
-//when you leave a frame, reset everything!
-clearClick();
-draw();
+	//reset
+	//when you leave a frame, reset everything!
+	clearClick();
+	draw();
 }
+$("#up").click(up);
 
 //DOWN
 function down(){
@@ -587,7 +588,9 @@ function down(){
 	clearClick();
 	draw();
 };
+$("#down").click(down);
 
+/* DEPRECATED
 //COLOR PICKER
 $('#setColor').click(function(){
 	var redValue = $('#red').val(); //.val() is for jquery, .value is for regular ecmascript!
@@ -597,9 +600,7 @@ $('#setColor').click(function(){
 	$('#showColor').css({'background-color': newColor});
 	curColor = newColor;
 });
-
-$("#up").click(up);
-$("#down").click(down);
+*/
 
 //keymapping
 $(document).keydown(function(e){
