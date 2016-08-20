@@ -115,10 +115,13 @@ margin-bottom: 5px;
 <div class='container-fluid'>
 
 <div class='row' id='header'>
-	<h1>animation/drawing app</h1>
-	<p>link to source code</p>
-	<button id='toggleToolbar' class='btn' onclick='toggleToolbar()'> toggle toolbar </button>
-
+	
+		<ul>
+			<h1>animation/drawing app</h1>
+			<p>link to <a href='https://github.com/syncopika/javascriptProjects/tree/master/html_drawing_app' target='_blank'> source code </a></p>
+			<button id='toggleToolbar' class='btn' onclick='toggleToolbar()'> toggle toolbar </button>
+		</ul>
+	
 		<ul>
 			<li id='down'><h2><=</h2></li>
 			<li><h2 id='count'></h2></li>
@@ -196,7 +199,7 @@ margin-bottom: 5px;
 				<li onclick='reset()'>reset</button>
 			</ul>
 	</div>
-		
+			<!-- color wheel -->
 			<canvas id='colorWheel' height='200' width='200'></canvas>
 			<p id='pickedColor'>color picked goes here</p> 
 			
@@ -236,6 +239,7 @@ clickColor = [];
 clickSize = [];
 }
 
+
 function addClick(x, y, dragging){
 clickX.push(x);
 clickY.push(y);
@@ -243,6 +247,7 @@ clickDrag.push(dragging);
 clickColor.push(curColor);
 clickSize.push(curSize);
 }
+
 
 //ok new approach. canvasData will store pixel data via getImageData() for each canvas. the new thing is that canvasData will only hold the 10 MOST RECENT changes to each canvas. 
 //here's how it works: every time user finishes drawing a line, i.e. upon MOUSEUP, get image data for the current canvas and store it in AN ARRAY that corresponds to the right canvas in canvasData.
@@ -256,14 +261,14 @@ var undoCounter;
 //get this to work properly!! 1 undo works ok, but what about more??
 function undo(){
 
-if(undoCounter === 0 || undoCounter === undefined){
-undoCounter = canvasData[curCanvas].length - 1;
-}
+	if(undoCounter === 0 || undoCounter === undefined){
+		undoCounter = canvasData[curCanvas].length - 1;
+	}
 
-if(undoCounter > 0){
-context.clearRect(0, 0, theCanvas.width, theCanvas.height);
-context.putImageData(canvasData[curCanvas][--undoCounter], 0, 0);
-}
+	if(undoCounter > 0){
+		context.clearRect(0, 0, theCanvas.width, theCanvas.height);
+		context.putImageData(canvasData[curCanvas][--undoCounter], 0, 0);
+	}
 }
 
 //for colorWheel
@@ -295,7 +300,6 @@ for(var angle = 0; angle <= 5600; angle++){
 }
 
 //pick a color from color wheel
-
 $('#colorWheel').mousedown(function(e){ 
 var x = e.offsetX;
 var y = e.offsetY;
@@ -360,45 +364,35 @@ context.fillRect(0,0,theCanvas.width,theCanvas.height);
 //define redraw
 function redraw(){
 
-context.lineJoin = 'round';
+	context.lineJoin = 'round';
 
-//new kind of brush
-/*
-function weirdBrush(){
-var random = Math.random()*(15-1) + 1;
-context.moveTo(clickX[i-1]*random, clickY[i-1]);
-context.lineTo(clickX[i]*random, clickY[i]/random);
-}
-*/
-
-for(var i = 0; i < clickX.length; i++){
-  context.beginPath();
-  //this helps prevent dragging!!! 
-  if(clickDrag[i] && i){ 
-  context.moveTo(clickX[i-1], clickY[i-1]);//this might explain buggy crazy brush when copying a canvas. try changing the -1. 
-  //context.lineTo(clickX[i], clickY[i]);
-  }
-  else{
-	if(lbrush === 1){
-	cbrush = 0;
-	context.moveTo(clickX[i], clickY[i]+10);
-	}
-	else if(cbrush === 1){
-	lbrush = 0;
-	context.moveTo(clickX[i-2], clickY[i-1]+15);
-	context.lineTo(clickX[i], clickY[i]);
-	}
-	else{
-	context.moveTo(clickX[i], clickY[i]+1);
-	//context.lineTo(clickX[i], clickY[i]);
-	}
-  }
+	for(var i = 0; i < clickX.length; i++){
+		context.beginPath();
+		//this helps prevent dragging!!! 
+		if(clickDrag[i] && i){ 
+			context.moveTo(clickX[i-1], clickY[i-1]);//this might explain buggy crazy brush when copying a canvas. try changing the -1. 
+			//context.lineTo(clickX[i], clickY[i]);
+		}else{
+			if(lbrush === 1){
+				cbrush = 0;
+				context.moveTo(clickX[i], clickY[i]+10);
+			}
+			else if(cbrush === 1){
+				lbrush = 0;
+				context.moveTo(clickX[i-2], clickY[i-1]+15);
+				context.lineTo(clickX[i], clickY[i]);
+			}
+			else{
+				context.moveTo(clickX[i], clickY[i]+1);
+				//context.lineTo(clickX[i], clickY[i]);
+			}
+		}
   context.lineTo(clickX[i], clickY[i]);
   context.closePath();
   context.strokeStyle = clickColor[i];
   context.lineWidth = clickSize[i]; 
   context.stroke(); 
-}
+	}
 };
 
 
@@ -447,6 +441,7 @@ context.fillStyle = "#FFFFFF";
 context.fillRect(0,0,theCanvas.width,theCanvas.height);
 });
 
+//for eraser
 $(".color").click(function(){
 curColor = this.id;
 });
@@ -485,89 +480,85 @@ var left = $('#canvas0').position()["left"];
 $("#addPage").click(addPage);
 
 function addPage(){
-page = page + 1;
-var canvasClone = $('#canvas0').clone();
-var newId = 'canvas' + page;
-layerArray.push(newId);
-canvasClone.addClass('canvas');
-canvasClone.attr('id', newId);
-canvasClone.css({"position": "absolute", "top": top+"px", "left": left+"px", "z-index":0, "border": "1px black solid", "opacity":0});
-canvasClone.appendTo('#picture');
+	page = page + 1;
+	var canvasClone = $('#canvas0').clone();
+	var newId = 'canvas' + page;
+	layerArray.push(newId);
+	canvasClone.addClass('canvas');
+	canvasClone.attr('id', newId);
+	canvasClone.css({"position": "absolute", "top": top+"px", "left": left+"px", "z-index":0, "border": "1px black solid", "opacity":0});
+	canvasClone.appendTo('#picture');
 
-//set canvas bg color to white!
-$('#' + newId)[0].getContext('2d').fillStyle = "#FFFFFF";
-$('#' + newId)[0].getContext('2d').fillRect(0,0,theCanvas.width,theCanvas.height);
-
+	//set canvas bg color to white!
+	$('#' + newId)[0].getContext('2d').fillStyle = "#FFFFFF";
+	$('#' + newId)[0].getContext('2d').fillRect(0,0,theCanvas.width,theCanvas.height);
 }
 
 //clone the previous canvas
 $("#clone").click(clonePage);
 
 function clonePage(){
-page = page + 1;
-var canvasClone = $('#' + curCanvas).clone();//cloning the previous canvas only copies the canvas, not what's in it...
-var newId = 'canvas' + page;
-layerArray.push(newId);
-canvasClone.addClass('canvas');
-canvasClone.attr('id', newId);
-canvasClone.css({"position": "absolute", "top": top+"px", "left": left+"px", "z-index":0, "border": "1px black solid", "opacity":.4});
-canvasClone.appendTo('#picture');
+	page = page + 1;
+	var canvasClone = $('#' + curCanvas).clone();//cloning the previous canvas only copies the canvas, not what's in it...
+	var newId = 'canvas' + page;
+	layerArray.push(newId);
+	canvasClone.addClass('canvas');
+	canvasClone.attr('id', newId);
+	canvasClone.css({"position": "absolute", "top": top+"px", "left": left+"px", "z-index":0, "border": "1px black solid", "opacity":.4});
+	canvasClone.appendTo('#picture');
 
-//set canvas bg color to white!
-$('#' + newId)[0].getContext('2d').fillStyle = "#FFFFFF";
-$('#' + newId)[0].getContext('2d').fillRect(0,0,theCanvas.width,theCanvas.height);
+	//set canvas bg color to white!
+	$('#' + newId)[0].getContext('2d').fillStyle = "#FFFFFF";
+	$('#' + newId)[0].getContext('2d').fillRect(0,0,theCanvas.width,theCanvas.height);
 
-//get image data for frame you want to clone
-var canvasToClone = context.getImageData(0, 0, theCanvas.width, theCanvas.height);
+	//get image data for frame you want to clone
+	var canvasToClone = context.getImageData(0, 0, theCanvas.width, theCanvas.height);
 
-//assign context to new canvas
-context = document.getElementById(newId).getContext("2d");
+	//assign context to new canvas
+	context = document.getElementById(newId).getContext("2d");
 
-//draw image data of most recent version of current canvas
-context.putImageData(canvasToClone, 0, 0);
-
+	//draw image data of most recent version of current canvas
+	context.putImageData(canvasToClone, 0, 0);
 };
 
 //function for storing/modifying pixel data for each canvas
 function pixelData(){
 
-if(canvasData[curCanvas] === undefined){
-canvasData[curCanvas] = [context.getImageData(0, 0, theCanvas.width, theCanvas.height)];
-}
-
-//if user returns to a previous canvas, add any new pixel data to the  existing array
-else if(canvasData[curCanvas] !== 'undefined' && canvasData[curCanvas].length < 10){
-canvasData[curCanvas].push(context.getImageData(0, 0, theCanvas.width, theCanvas.height));
-}
-
-else if(canvasData[curCanvas] !== 'undefined' && canvasData[curCanvas].length === 10){
-canvasData[curCanvas].shift();
-canvasData[curCanvas].push(context.getImageData(0, 0, theCanvas.width, theCanvas.height));
-}
-
+	if(canvasData[curCanvas] === undefined){
+		canvasData[curCanvas] = [context.getImageData(0, 0, theCanvas.width, theCanvas.height)];
+	}
+	//if user returns to a previous canvas, add any new pixel data to the  existing array
+	else if(canvasData[curCanvas] !== 'undefined' && canvasData[curCanvas].length < 10){
+		canvasData[curCanvas].push(context.getImageData(0, 0, theCanvas.width, theCanvas.height));
+	}
+	else if(canvasData[curCanvas] !== 'undefined' && canvasData[curCanvas].length === 10){
+		canvasData[curCanvas].shift();
+		canvasData[curCanvas].push(context.getImageData(0, 0, theCanvas.width, theCanvas.height));
+	}
 }
 
 //UP
 function up(){
 
 if(curPage < page){
-curPage = curPage + 1;
-$('#count').html(curPage);
-curCanvas = layerArray[curPage];
-$('#' + curCanvas).css({"z-index":10, "opacity": .8}); //if canvas wasn't white, you could set this to 1. but if you keep a white background, curCanvas needs to be somewhat opaque.
+	curPage = curPage + 1;
+	$('#count').html(curPage);
+	curCanvas = layerArray[curPage];
+	$('#' + curCanvas).css({"z-index":10, "opacity": .8}); //if canvas wasn't white, you could set this to 1. but if you keep a white background, curCanvas needs to be somewhat opaque.
 
-context = document.getElementById(curCanvas).getContext("2d");
+	context = document.getElementById(curCanvas).getContext("2d");
 
-for(i=0;i<layerArray.length;i++){
-if(layerArray[i] !== curCanvas){
-$('#' + layerArray[i]).css({"z-index":0,"opacity":0});
-$('#' + layerArray[i]).mousedown(function(){ 
-paint = false;
-})
-}
-};
-//set only the second-to-last canvas a lower opacity
-$('#' + layerArray[curPage-1]).css({"z-index":0,"opacity":.6});
+	for(i=0;i<layerArray.length;i++){
+		if(layerArray[i] !== curCanvas){
+			$('#' + layerArray[i]).css({"z-index":0,"opacity":0});
+			$('#' + layerArray[i]).mousedown(function(){ 
+				paint = false;
+			});
+		}
+	};
+	
+	//set only the second-to-last canvas a lower opacity
+	$('#' + layerArray[curPage-1]).css({"z-index":0,"opacity":.6});
 }
 
 //reset
@@ -579,39 +570,39 @@ draw();
 //DOWN
 function down(){
 
-if(curPage > 0){
-curPage = curPage - 1;
-$('#count').html(curPage);
-curCanvas = layerArray[curPage];
-$('#' + curCanvas).css({"z-index":10, "opacity": .8});
-}
+	if(curPage > 0){
+		curPage = curPage - 1;
+		$('#count').html(curPage);
+		curCanvas = layerArray[curPage];
+		$('#' + curCanvas).css({"z-index":10, "opacity": .8});
+	}
 
-context = document.getElementById(curCanvas).getContext("2d");
+	context = document.getElementById(curCanvas).getContext("2d");
 
-for(i=0;i<layerArray.length;i++){
-if(layerArray[i] !== curCanvas){
-$('#' + layerArray[i]).css({"z-index":0,"opacity":0});
-$('#' + layerArray[i]).mousedown(function(){ 
-paint = false;
-})
-}
-};
-$('#' + layerArray[curPage-1]).css({"z-index":0,"opacity":.6});
+	for(i=0;i<layerArray.length;i++){
+		if(layerArray[i] !== curCanvas){
+			$('#' + layerArray[i]).css({"z-index":0,"opacity":0});
+			$('#' + layerArray[i]).mousedown(function(){ 
+				paint = false;
+			});
+		}
+	};
 
-//when you leave a frame, reset everything!
-clearClick();
+	$('#' + layerArray[curPage-1]).css({"z-index":0,"opacity":.6});
 
-draw();
+	//when you leave a frame, reset everything!
+	clearClick();
+	draw();
 };
 
 //COLOR PICKER
 $('#setColor').click(function(){
-var redValue = $('#red').val(); //.val() is for jquery, .value is for regular ecmascript!
-var blueValue = $('#blue').val();
-var greenValue = $('#green').val();
-var newColor = 'rgb(' + redValue + ',' + greenValue + ',' + blueValue + ')';
-$('#showColor').css({'background-color': newColor});
-curColor = newColor;
+	var redValue = $('#red').val(); //.val() is for jquery, .value is for regular ecmascript!
+	var blueValue = $('#blue').val();
+	var greenValue = $('#green').val();
+	var newColor = 'rgb(' + redValue + ',' + greenValue + ',' + blueValue + ')';
+	$('#showColor').css({'background-color': newColor});
+	curColor = newColor;
 });
 
 $("#up").click(up);
@@ -639,34 +630,33 @@ switch(e.which){
 //functions for animation playback
 var play;
 function playForward(){
-play = null;
-play = setInterval(up,1000);
+	play = null;
+	play = setInterval(up,1000);
 }
 
 function playBackward(){
-play = null;
-//autofocus on last frame
-$('#' + layerArray[layerArray.length-1]).css({"z-index":10, "opacity": .8});
-curCanvas = layerArray[page];
-curPage = page;
-//
-play = setInterval(down,1000);
+	play = null;
+	//autofocus on last frame
+	$('#' + layerArray[layerArray.length-1]).css({"z-index":10, "opacity": .8});
+	curCanvas = layerArray[page];
+	curPage = page;
+	play = setInterval(down,1000);
 }
 
 function stop(){
-clearInterval(play);
+	clearInterval(play);
 }
 
 $('#colorBg').click(function(){
-for(i = 0;i < 255; i++){ 
-context.fillStyle = 'rgb(' + (i-50) + ',' + (i-20) + ',' + (i-10) + ')';
-context.fillRect(0,i,theCanvas.width,theCanvas.height);
-}
+	for(i = 0;i < 255; i++){ 
+		context.fillStyle = 'rgb(' + (i-50) + ',' + (i-20) + ',' + (i-10) + ')';
+		context.fillRect(0,i,theCanvas.width,theCanvas.height);
+	}
 });
 
 $(document).ready(function(){
-$('.dropdown-toggle').dropdown();
-draw();
+	$('.dropdown-toggle').dropdown();
+	draw();
 });
 //end
 
