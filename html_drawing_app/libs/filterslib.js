@@ -5,6 +5,7 @@
 //reference to modular pattern: http://weblogs.asp.net/dwahlin/techniques-strategies-and-patterns-for-structuring-javascript-code-revealing-module-pattern
 
 var img = new Image();
+
 //prompt user to select pic from disk
 var openFile = (function(){
 return function(c){
@@ -16,7 +17,6 @@ return function(c){
 	   c(files)//do some function (defined by c) to that file
 	}
 	//bind the onFileChange function to fileInput. this triggers the next phase - getting the data from the picture file. 
-	//i think the 'change' event means just when you choose a file...
 	fileInput.addEventListener("change", onFileChange, false);
 	fileInput.click(); 
 }
@@ -32,7 +32,7 @@ if(!file.type.match(imageType)){
 
 var reader = new FileReader();
 
-//if reader is not working??
+//if reader is not working
 reader.onerror = function(e){
 alert('Error code ' + e.target.error);
 }
@@ -55,6 +55,10 @@ reader.readAsDataURL(file);
 //note that the image has to load first! so do img.onload...
 img.onload = function(){
 context.drawImage(img, 0, 0, 700, 700); //figure out how to get canvas.height here to work..?
+
+//log pixels of picture (this is for my drawing/animating app)
+pixelData();
+
 //ah! reset the value for the HTML input file thing so that you can use the same pic for consecutive frames!  
 document.querySelector("#fileInput").value = null;
 //reset contrast value every time a new pic is imported
@@ -130,7 +134,9 @@ function saturate(pixels){
 	return pixels;
 }
 
-//new kind of filter?
+/*
+* this function swaps colors
+*/
 function swap(pixels){
 	var d = pixels.data;
 	for(var i=0;i<d.length;i+=4){
@@ -145,6 +151,9 @@ function swap(pixels){
 	return pixels;
 }
 
+/*
+* this function creates bands
+*/
 function banded(pixels){
 	var d = pixels.data;
 	for(var i=0; i<d.length;i+=12){
@@ -158,6 +167,9 @@ function banded(pixels){
 	}
 }
 
+/*
+* this function creates a light purplish 'chrome' effect
+*/
 function purpleChrome(pixels){
 	var d = pixels.data;
 	for(var i=0; i<d.length;i++){
@@ -172,6 +184,9 @@ function purpleChrome(pixels){
 	return pixels;
 }
 
+/*
+* this filter turns any white spots purple
+*/
 function purplizer(pixels){
 	//aka purplefier - all pixels with green=red or green>red become purple
 	var d = pixels.data;
@@ -196,6 +211,9 @@ function purplizer(pixels){
 	return pixels;
 }
 
+/*
+* this filter turns everything dark 
+*/
 function scary(pixels){
 	var saturationValue = 2.5;
 	var d = pixels.data;
@@ -227,6 +245,9 @@ function scary(pixels){
 	return pixels;
 }
 
+/*
+* this filter saturates and darkens some colors and produces an interesting palette
+*/
 function heatwave(pixels){
 	var d = pixels.data;
 	for(var i=0; i < d.length; i++){
@@ -243,6 +264,9 @@ function heatwave(pixels){
 	return pixels;
 }
 
+/*
+* I think this function should have been called 'noise'. it pretty much just shifts all the pixels around.
+*/
 function randomize(pixels){
 	var d = pixels.data;
 	
@@ -303,7 +327,9 @@ function randomize(pixels){
 	return pixels;
 }
 
-//inversion
+/*
+* this function inverts colors
+*/
 function invert(pixels){
 	
 	var d = pixels.data;
@@ -325,7 +351,9 @@ function invert(pixels){
 }
 
 
-//blurrrrrrrrrrrr
+/*
+* this function causes a blurring effect. I believe it is a Gaussian blur? 
+*/
 function blurry(pixels){
 
 var d = pixels.data;
@@ -358,8 +386,133 @@ for(i = 0; i < d.length; i+=4){
 return pixels;
 }
 
+/*
+* this function creates fisheye distortion! 
+*/
+//source: http://popscan.blogspot.com/2012/04/fisheye-lens-equation-simple-fisheye.html
+//http://paulbourke.net/dome/fisheye/
+function fisheye(imgData, xPos, yPos, rad){
+	
+	//this is the array you edit with the translated pixels
+	var data = imgData.data;
+	
+	var height = Math.sqrt(data.length/4);
+	var width = Math.sqrt(data.length/4);
+	
+	//this is the original data set you want to refer to
+	//to put the correctly colored pixels in the right place
+	//remember to make a deep copy so that any editing to 'data' will not
+	//alter the elements in this array!
+	var oldData = new Uint8ClampedArray(data);
 
-//control brightness
+	var pixelCounter = 0;
+	
+	//rows
+	for(var y = 0; y < height; y++){
+	
+		//normalize y coordinate to -1...+1
+		var normY = (2*y)/(height) - 1;
+		
+		//calculate normY squared
+		var normY2 = normY * normY;
+		
+		//columns
+		for(var x =0; x < width; x++){
+
+			//collect old data for this pixel
+			var start = pixelCounter*4;
+			
+			//normalize x coordinate to -1...+1
+			var normX = (2*x)/(width) - 1;
+			
+			//calculate normX squared
+			var normX2 = normX * normX;
+			
+			//calculate distance from center
+			var dist = Math.sqrt(normX2 + normY2);
+
+			//only alter pixels inside of radius
+			//changing the dist range affects the scope of the lens. i.e. less range (.5 => .6) gives you a 'telescoping' lens. 
+			//a larger range (0 => 1) gives you a full circle.
+			if( (0 <= dist) && (dist <= 1) ){
+		
+				var newR = Math.sqrt(1 - dist*dist);
+				
+				//new distance between 0 and 1
+				newR = (dist + (1 - newR)) / 2;
+				
+				//discard any radius greater than 1
+				if(newR <= 1){
+					
+					//calculate angle for polar coordinates
+					var theta = Math.atan2(normY, normX);
+					
+					//calculate new X position with new distance in same angle
+					var newX = newR * Math.cos(theta);
+					
+					//calculate new Y position with new distance in same angle
+					var newY = newR * Math.sin(theta);
+					
+					//map from -1 to 1 to image coordinates
+					var x2 = Math.floor(( (newX + 1)*(width) ) / 2);
+					var y2 = Math.floor(( (newY + 1)*(height) ) / 2);
+
+					srcPos = ((width)*(y2))+x2;
+				    srcPos *= 4;
+					
+					data[start] = oldData[srcPos];
+					data[start + 1] = oldData[srcPos + 1];
+					data[start+ 2] = oldData[srcPos + 2];
+					data[start + 3] = oldData[srcPos + 3];		
+				}
+			}
+			pixelCounter++;
+		}//end inner for loop
+	}//end outer for loop
+	
+	//yPos and xPos are the coordinates of the center of the area of interest
+	context.putImageData(imgData, xPos-rad, yPos-rad);
+}
+
+//the above function can be used like so below:
+//first, a default fisheye that encompasses the canvas:
+function defaultFisheye(){
+	var data = context.getImageData(0, 0, theCanvas.width, theCanvas.height);
+	fisheye(data, 0, 0, 0);
+}
+
+//this one is a mobile one, in which the user should be able to specify a 
+//a radius and can click anywhere on the canvas to generate a fisheye distortion within the 
+//specified radius.
+
+//It works by making a new image data array with only the pixels from the area specified by the user (after an image has been imported),
+//doing the distortion function on that array, and then putting the results in the same location it came from onto the canvas.
+function mobileFisheye(radius, xPos, yPos){
+	
+	//xPos and yPos are the coordinates of the center of the area of interest
+	var diameter = radius*2;
+
+	//xPos-radius = the x coordinate of the upper left corner of the area of interest!
+	var data = context.getImageData(xPos-radius, yPos-radius, diameter, diameter);
+	
+	fisheye(data, xPos, yPos, radius);
+}
+
+/*example implementation:
+$('#canvas0').mousedown(function(e){
+
+	//specified radius of effect = 50;
+	var rad = 100;
+	var xPos = e.offsetX;
+	var yPos = e.offsetY;
+
+	mobileFisheye(rad, xPos, yPos);
+})
+*/
+
+/**** END FISHEYE *****/
+
+//control brightness - increase
 function incBright(pixels){
 	
 	var d = pixels.data;
@@ -376,6 +529,7 @@ function incBright(pixels){
 	
 }
 
+//control brightness - decrease
 function decBright(pixels){
 	
 	var d = pixels.data;
