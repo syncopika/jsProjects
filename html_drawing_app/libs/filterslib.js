@@ -200,14 +200,7 @@ function purplizer(pixels){
 					d[i+2] = d[i+2]*2;
 					d[i+1] = d[i+2]/2;
 				}
-		/*
-		for(j=0;j<5;j++){
-				d[i] = d[((j*(pixels.width*4)) + (j*4)) + 2];
-				d[i+1] = d[((j+2)*(pixels.width*4)) + ((j+1)*4)];
 		}
-		*/
-	}
-		
 	return pixels;
 }
 
@@ -419,7 +412,9 @@ function fisheye(imgData, xPos, yPos, rad){
 		//columns
 		for(var x =0; x < width; x++){
 
-			//collect old data for this pixel
+			//this counter will make sure that 
+			//the right index for each pixel's color is
+			//being looked at 
 			var start = pixelCounter*4;
 			
 			//normalize x coordinate to -1...+1
@@ -453,12 +448,12 @@ function fisheye(imgData, xPos, yPos, rad){
 					//calculate new Y position with new distance in same angle
 					var newY = newR * Math.sin(theta);
 					
-					//map from -1 to 1 to image coordinates
+					//get the location of where the pixels should be moved FROM.
 					var x2 = Math.floor(( (newX + 1)*(width) ) / 2);
 					var y2 = Math.floor(( (newY + 1)*(height) ) / 2);
 
 					srcPos = ((width)*(y2))+x2;
-				    srcPos *= 4;
+					 srcPos *= 4;
 					
 					data[start] = oldData[srcPos];
 					data[start + 1] = oldData[srcPos + 1];
