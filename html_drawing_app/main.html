@@ -156,7 +156,7 @@ margin-bottom: 5px;
 					<!-- for adjusting contrast -->
 					<br>
 					<p class="text-info">contrast</p>
-							<p>
+					<p>
 						<span><button class='btn' id='incContrast' onclick='filterCanvas(inContrast)'>increase</button></span>
 						<span>&nbsp;</span>
 						<span><button class='btn' id='decContrast' onclick='filterCanvas(deContrast)'>decrease</button></span>
@@ -256,14 +256,12 @@ function addClick(x, y, dragging){
 //undoCounter provides a limit of 9 undos
 var undoCounter;
 
-//undo function!! 
-//get this to work properly!! 1 undo works ok, but what about more??
+//undo function
+//get this to work properly. 1 undo works ok, but what about more??
 function undo(){
-
 	if(undoCounter === 0 || undoCounter === undefined){
 		undoCounter = canvasData[curCanvas].length - 1;
 	}
-
 	if(undoCounter > 0){
 		context.clearRect(0, 0, theCanvas.width, theCanvas.height);
 		context.putImageData(canvasData[curCanvas][--undoCounter], 0, 0);
@@ -310,7 +308,6 @@ $('#colorWheel').mousedown(function(e){
 	curColor = 'rgb(' + colorPicked[0] + ',' + colorPicked[1] + ',' + colorPicked[2] + ')';
 })
 
-
 //brush size changer
 var brushSize = document.querySelector('.brushSize');
 brushSize.oninput = function(){
@@ -318,21 +315,17 @@ brushSize.oninput = function(){
 	$('#brushSizeValue').html(brushSize.value);
 }
 
-
 //prevent dropdown from closing after one click
 $('.dropdown-menu > li').click(function(e){
 	e.stopPropagation();
 })
 
-
 //stuff for the page-count thing at the top
 var page = 0;
 $('#count').html(curPage);//make sure 0 shows up when page loads
 
-
 //toggle toolbar
 var showToolbar = false;
-
 function toggleToolbar(){
 	if(!showToolbar){
 		$('#rightCol').css('transform', 'translateX(0)');
