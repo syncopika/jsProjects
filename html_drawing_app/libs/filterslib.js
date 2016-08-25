@@ -96,12 +96,12 @@ function saturate(pixels){
 	//one of these equations per r,g,b
 	var r1 = (1 - saturationValue) * lumR + saturationValue;
 	var g1 = (1 - saturationValue) * lumG + saturationValue;
-    var b1 = (1 - saturationValue) * lumB + saturationValue;	
+        var b1 = (1 - saturationValue) * lumB + saturationValue;	
 	
 	//then one of these for each
 	var r2 = (1 - saturationValue) * lumR;
 	var g2 = (1 - saturationValue) * lumG;
-    var b2 = (1 - saturationValue) * lumB;	
+        var b2 = (1 - saturationValue) * lumB;	
 	
 	for(var i = 0; i < d.length; i+=4){
 		var r = d[i];
@@ -140,7 +140,7 @@ function banded(pixels){
 	for(var i=0; i<d.length;i+=12){
 		var r = d[i];
 		var g = d[i+1];
-	    var b = d[i+2];
+	        var b = d[i+2];
 		
 		d[i] = "#FFFFFF";
 		d[i+1] = "#FFFFFF";
@@ -177,7 +177,7 @@ function purplizer(pixels){
 			var b = d[i+2];
 			var a = d[i+3];
 		
-		    if(g >= r){
+			 if(g >= r){
 				d[i+2] = d[i+2]*2;
 				d[i+1] = d[i+2]/2;
 			}
@@ -200,12 +200,12 @@ function scary(pixels){
 	//one of these equations per r,g,b
 	var r1 = (1 - saturationValue) * lumR + saturationValue;
 	var g1 = (1 - saturationValue) * lumG + saturationValue;
-    var b1 = (1 - saturationValue) * lumB + saturationValue;	
+        var b1 = (1 - saturationValue) * lumB + saturationValue;	
 	
 	//then one of these for each
 	var r2 = (1 - saturationValue) * lumR;
-	var g2 = (1 - saturationValue) * lumG;
-    var b2 = (1 - saturationValue) * lumB;	
+ 	var g2 = (1 - saturationValue) * lumG;
+        var b2 = (1 - saturationValue) * lumB;	
 	
 	for(var i = 0; i < d.length; i+=4){
 		var r = d[i];
@@ -214,7 +214,7 @@ function scary(pixels){
 		
 		d[i] = r*r1 + g*g2 + b*b2;
 		d[i+1] = r*r2 + g*g1 + b*b2;
-	    d[i+2] = r*r2 + g*g2 + b*b1;
+	        d[i+2] = r*r2 + g*g2 + b*b1;
 	}
 	return pixels;
 }
@@ -312,7 +312,6 @@ function invert(pixels){
 	var r,g,b,x,y,z;
 	
 	for(var i = 0; i < d.length; i+=4){
-		
 		r = d[i];
 		g = d[i+1];
 		b = d[i+2];
@@ -320,7 +319,6 @@ function invert(pixels){
 		d[i] = 255 - r;
 		d[i+1] = 255 - g;
 		d[i+2] = 255 - b;
-		
 	}
 	return pixels;
 }
