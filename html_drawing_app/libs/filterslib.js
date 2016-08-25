@@ -1,105 +1,86 @@
 //library for picture import, filters
 //use this library to set ALL new variables that only these functions will use. 
 
-//http://www.storminthecastle.com/2013/04/06/how-you-can-do-cool-image-effects-using-html5-canvas/
-//reference to modular pattern: http://weblogs.asp.net/dwahlin/techniques-strategies-and-patterns-for-structuring-javascript-code-revealing-module-pattern
+//reference: http://www.storminthecastle.com/2013/04/06/how-you-can-do-cool-image-effects-using-html5-canvas/
 
 var img = new Image();
 
-//prompt user to select pic from disk
-var openFile = (function(){
-return function(c){
-	var fileInput = document.querySelector("#fileInput");
+function fileHandler(){
+	//initiate file choosing after button click
+	var input = document.getElementById('fileInput');
+	input.addEventListener('change', getFile, false);
+	input.click();
+}
 
-	function onFileChange(e){
-	var files = e.target.files;
-	if(files && files.length>0) //if a file has been selected
-	   c(files)//do some function (defined by c) to that file
+function getFile(e){
+
+	var reader = new FileReader();
+
+	var file = e.target.files[0];
+
+	if (!file.type.match(/image.*/)){
+		console.log("not a valid image");
+		return;
 	}
-	//bind the onFileChange function to fileInput. this triggers the next phase - getting the data from the picture file. 
-	fileInput.addEventListener("change", onFileChange, false);
-	fileInput.click(); 
-}
-})();
 
-//remember that this function will be passed an array containing the selected file(s)
-function handleFile(files){
-var file = files[0];
-var imageType = /image.*/;
-if(!file.type.match(imageType)){
-	return;
-}
+	//when the image loads, put it on the canvas.
+	img.onload = function(){
+	
+		context.drawImage(img, 0, 0, 700, 700); //figure out how to get canvas.height here to work..?
 
-var reader = new FileReader();
+		//log pixels of picture (this is for my drawing/animating app)
+		pixelData();
 
-//if reader is not working
-reader.onerror = function(e){
-alert('Error code ' + e.target.error);
-}
-
-//Create a closure (notice modular pattern here) to capture file information
-//after the selected file is read, its contents are available and this function is executed
-reader.onload = (function(file){  
-	return function(evt){
-		//attach the name of the file onto the webpage
-		//document.getElementById('fileName').innerHTML = file.name;
-		//set the img src to the file
-		img.src = evt.target.result;
+		//reset the value for the HTML input file thing so that you can use the same pic for consecutive frames!  
+		document.querySelector("#fileInput").value = null;
+		
+		//reset contrast value every time a new pic is imported
+		contrastVal = 0;
 	}
-})(file); //make sure file is passed to this function
 
-//read in the file as a data url (why over here though?)
-reader.readAsDataURL(file);
+	//after reader has loaded file, put the data in the image object.
+	reader.onloadend = function(){
+		img.src = reader.result;
+	}
 
-//send the pic to the canvas
-//note that the image has to load first! so do img.onload...
-img.onload = function(){
-context.drawImage(img, 0, 0, 700, 700); //figure out how to get canvas.height here to work..?
+	//read teh file as a URL
+	reader.readAsDataURL(file);
+};
 
-//log pixels of picture (this is for my drawing/animating app)
-pixelData();
-
-//ah! reset the value for the HTML input file thing so that you can use the same pic for consecutive frames!  
-document.querySelector("#fileInput").value = null;
-//reset contrast value every time a new pic is imported
-contrastVal = 0;
-}
-}
-
-//BEGIN FILTERS
+/**BEGIN FILTERS**/
 //general filtering function. pass any kind of filter through this function.
 //bind to onclick in html! 
 function filterCanvas(filter){
-var imgData = context.getImageData(0, 0, 700, 700);
-filter(imgData);
-context.putImageData(imgData, 0, 0);
+	var imgData = context.getImageData(0, 0, 700, 700);
+	filter(imgData);
+	context.putImageData(imgData, 0, 0);
 }
 
 //grayscale filter using an arithmetic average of the color components
 //the 'pixels' parameter will be the imgData variable. 
 function grayscale(pixels){
-var d = pixels.data;
-for (var i = 0; i < d.length; i += 4) {
-      var r = d[i];
-      var g = d[i + 1];
-      var b = d[i + 2];
+	var d = pixels.data;
+	for (var i = 0; i < d.length; i += 4) {
+	   var r = d[i];
+	   var g = d[i + 1];
+	   var b = d[i + 2];
 	  //the value obtained by (r+g+b)/3 will be the value assigned to d[i], d[i+1], and d[i+2].  
-      d[i] = d[i + 1] = d[i + 2] = (r+g+b)/3;
-    }
-    return pixels;
+	   d[i] = d[i + 1] = d[i + 2] = (r+g+b)/3;
+	}
+	return pixels;
 };
 
 //sepia filter
 function sepia(pixels){
-var d = pixels.data;
-for (var i = 0;i < d.length; i += 4){
-	var r = d[i];
-	var g = d[i+1];
-	var b = d[i+2];
-	d[i] = (r*.5) + (g*.2) + (b*.3); //red
-	d[i+1] = (r*.2) + (g*.3) + (b*.5); //green
-	d[i+2] = (r*.6) + (g*.3) + (b*.4); //blue	
-}
+	var d = pixels.data;
+	for (var i = 0;i < d.length; i += 4){
+    	var r = d[i];
+        var g = d[i+1];
+        var b = d[i+2];
+		d[i] = (r*.5) + (g*.2) + (b*.3); //red
+		d[i+1] = (r*.2) + (g*.3) + (b*.5); //green
+		d[i+2] = (r*.6) + (g*.3) + (b*.4); //blue	
+	}
 	return pixels;
 };
 
@@ -134,15 +115,15 @@ function saturate(pixels){
 	return pixels;
 }
 
-/*
+/**
 * this function swaps colors
 */
 function swap(pixels){
 	var d = pixels.data;
 	for(var i=0;i<d.length;i+=4){
-		var r = d[i];
-		var g = d[i+1];
-	    var b = d[i+2];
+	var r = d[i];
+	var g = d[i+1];
+	var b = d[i+2];
 	
 	d[i] = b;
 	d[i+1] = r;
@@ -151,7 +132,7 @@ function swap(pixels){
 	return pixels;
 }
 
-/*
+/**
 * this function creates bands
 */
 function banded(pixels){
@@ -161,13 +142,13 @@ function banded(pixels){
 		var g = d[i+1];
 	    var b = d[i+2];
 		
-	d[i] = "#FFFFFF";
-	d[i+1] = "#FFFFFF";
-	d[i+2] = "#FFFFFF";
+		d[i] = "#FFFFFF";
+		d[i+1] = "#FFFFFF";
+		d[i+2] = "#FFFFFF";
 	}
 }
 
-/*
+/**
 * this function creates a light purplish 'chrome' effect
 */
 function purpleChrome(pixels){
@@ -184,27 +165,27 @@ function purpleChrome(pixels){
 	return pixels;
 }
 
-/*
+/**
 * this filter turns any white spots purple
 */
 function purplizer(pixels){
 	//aka purplefier - all pixels with green=red or green>red become purple
 	var d = pixels.data;
 		for(var i=0; i<d.length; i+=4){
-				var r = d[i];
-				var g = d[i+1];
-				var b = d[i+2];
-				var a = d[i+3];
+			var r = d[i];
+			var g = d[i+1];
+			var b = d[i+2];
+			var a = d[i+3];
 		
-		        if(g >= r){
-					d[i+2] = d[i+2]*2;
-					d[i+1] = d[i+2]/2;
-				}
+		    if(g >= r){
+				d[i+2] = d[i+2]*2;
+				d[i+1] = d[i+2]/2;
+			}
 		}
 	return pixels;
 }
 
-/*
+/**
 * this filter turns everything dark 
 */
 function scary(pixels){
@@ -238,7 +219,7 @@ function scary(pixels){
 	return pixels;
 }
 
-/*
+/**
 * this filter saturates and darkens some colors and produces an interesting palette
 */
 function heatwave(pixels){
@@ -247,9 +228,11 @@ function heatwave(pixels){
 		var r = d[i];
 		var g = d[i+1];
 		var b = d[i+2];
+		
 		if(g > 100 && g < 200){
 			d[i+1] = 0;
 		}
+		
 		if(r < 100){
 			d[i] = d[i]*2;
 		}
@@ -257,7 +240,7 @@ function heatwave(pixels){
 	return pixels;
 }
 
-/*
+/**
 * I think this function should have been called 'noise'. it pretty much just shifts all the pixels around.
 */
 function randomize(pixels){
@@ -320,7 +303,7 @@ function randomize(pixels){
 	return pixels;
 }
 
-/*
+/**
 * this function inverts colors
 */
 function invert(pixels){
@@ -339,13 +322,13 @@ function invert(pixels){
 		d[i+2] = 255 - b;
 		
 	}
-
 	return pixels;
 }
 
-
-/*
-* this function causes a blurring effect. I believe it is a Gaussian blur? 
+/**
+* this function causes a blurring effect. It takes the pixel itself and 
+* its left, right, above and below neighbors (if it has them)
+* and calculates the average of their total R, G, B, and A channels respectively.
 */
 function blurry(pixels){
 
@@ -355,6 +338,7 @@ for(i = 0; i < d.length; i+=4){
 		
 		//if these conditions are not undefined, then that pixel must exist.
 		//right pixel (check if 4 pixel radius ok)
+		//also, the 2800 comes from the width and height of my canvas being 700, multiplied by 4.
 		var cond1 = (d[i+4] == undefined);
 		//left pixel
 		var cond2 = (d[i-4] == undefined);
@@ -379,7 +363,7 @@ for(i = 0; i < d.length; i+=4){
 return pixels;
 }
 
-/*
+/**
 * this function creates fisheye distortion! 
 */
 //source: http://popscan.blogspot.com/2012/04/fisheye-lens-equation-simple-fisheye.html
@@ -423,7 +407,7 @@ function fisheye(imgData, xPos, yPos, rad){
 			//calculate normX squared
 			var normX2 = normX * normX;
 			
-			//calculate distance from center
+			//calculate distance from center (the center is always 0,0)
 			var dist = Math.sqrt(normX2 + normY2);
 
 			//only alter pixels inside of radius
@@ -453,7 +437,7 @@ function fisheye(imgData, xPos, yPos, rad){
 					var y2 = Math.floor(( (newY + 1)*(height) ) / 2);
 
 					srcPos = ((width)*(y2))+x2;
-					 srcPos *= 4;
+				    srcPos *= 4;
 					
 					data[start] = oldData[srcPos];
 					data[start + 1] = oldData[srcPos + 1];
@@ -479,7 +463,6 @@ function defaultFisheye(){
 //this one is a mobile one, in which the user should be able to specify a 
 //a radius and can click anywhere on the canvas to generate a fisheye distortion within the 
 //specified radius.
-
 //It works by making a new image data array with only the pixels from the area specified by the user (after an image has been imported),
 //doing the distortion function on that array, and then putting the results in the same location it came from onto the canvas.
 function mobileFisheye(radius, xPos, yPos){
@@ -507,7 +490,9 @@ $('#canvas0').mousedown(function(e){
 
 /**** END FISHEYE *****/
 
-//control brightness - increase
+/**
+*	control brightness - increase
+*/
 function incBright(pixels){
 	
 	var d = pixels.data;
@@ -540,17 +525,17 @@ function decBright(pixels){
 	return pixels;
 }
 
-//change contrast
-//set range -128 to 128 for now
-//I don't think it's working quite right...
-//basically, all dark colors should get darker, and light colors should get lighter right?
+/**change contrast
+*set range -128 to 128 for now
+*I don't think it's working quite right...
+*basically, all dark colors should get darker, and light colors should get lighter right?
+*/
+//this var is reset when importing a new picture
 var contrastVal = 0;
 
 function inContrast(pixels){
 	
 	var d = pixels.data;
-	
-	//var contrastFactor = (259*(contrastValue + 255)) / (255*(259 - contrastValue));
 	
 	if(contrastVal < 128){
 		contrastVal++;
@@ -572,8 +557,6 @@ function inContrast(pixels){
 function deContrast(pixels){
 	
 	var d = pixels.data;
-	
-	//var contrastFactor = (259*(contrastValue + 255)) / (255*(259 - contrastValue));
 	
 	if(contrastVal > -128){
 		contrastVal--;
