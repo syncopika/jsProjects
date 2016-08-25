@@ -330,10 +330,9 @@ function invert(pixels){
 */
 function blurry(pixels){
 
-var d = pixels.data;
+	var d = pixels.data;
 
-for(i = 0; i < d.length; i+=4){
-		
+	for(i = 0; i < d.length; i+=4){
 		//if these conditions are not undefined, then that pixel must exist.
 		//right pixel (check if 4 pixel radius ok)
 		//also, the 2800 comes from the width and height of my canvas being 700, multiplied by 4.
@@ -357,7 +356,7 @@ for(i = 0; i < d.length; i+=4){
 			d[i+2] = newB;
 			d[i+3] = newA;
 		}
-}
+	}
 return pixels;
 }
 
@@ -435,7 +434,7 @@ function fisheye(imgData, xPos, yPos, rad){
 					var y2 = Math.floor(( (newY + 1)*(height) ) / 2);
 
 					srcPos = ((width)*(y2))+x2;
-				    srcPos *= 4;
+				        srcPos *= 4;
 					
 					data[start] = oldData[srcPos];
 					data[start + 1] = oldData[srcPos + 1];
@@ -500,7 +499,6 @@ function incBright(pixels){
 			d[i] += 5;
 			d[i+1] += 5;
 			d[i+2] += 5;
-			//d[i+3] += 5;
 	}
 	
 	return pixels;
@@ -517,7 +515,6 @@ function decBright(pixels){
 			d[i] -= 5;
 			d[i+1] -= 5;
 			d[i+2] -= 5;
-			//d[i+3] -= 5;
 	}
 	
 	return pixels;
