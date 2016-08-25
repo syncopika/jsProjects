@@ -138,42 +138,41 @@ margin-bottom: 5px;
 		<p>-use spacebar to add a new layer!</p>
 		<p>-use the arrow keys to go forward or backward!</p>
  
-			<div id='toolbar'>
-			  <p class="text-info"> general tools </p>
+		<div id='toolbar'>
+			<p class="text-info"> general tools </p>
 
-					<button id = 'import' class='btn' onclick='fileHandler()'>import pic</button>
-					<input id="fileInput" style="display:none;" type="file">
-					<button id='clear' class='btn'>clear</button>
-					<button id='reset' class='btn'>reset</button>
-					<button id='#ffffff' class ='color btn'>eraser</button>
-					<button id='addPage' class='btn'>add another layer</button>
-					<button id ='clone' class='btn'> clone current layer</button>
-					<button class='btn' onclick='undo()'> undo </button>
-					<p class="text-info">change brush size</p>
-					<input class='brushSize' type='range' min='.5' max='15' step='.5' value='5'>
-					<span id='brushSizeValue'> 5.0 </span>
+			<button id = 'import' class='btn' onclick='fileHandler()'>import pic</button>
+			<input id="fileInput" style="display:none;" type="file">
+			<button id='clear' class='btn'>clear</button>
+			<button id='reset' class='btn'>reset</button>
+			<button id='#ffffff' class ='color btn'>eraser</button>
+			<button id='addPage' class='btn'>add another layer</button>
+			<button id ='clone' class='btn'> clone current layer</button>
+			<button class='btn' onclick='undo()'> undo </button>
+			<p class="text-info">change brush size</p>
+			<input class='brushSize' type='range' min='.5' max='15' step='.5' value='5'>
+			<span id='brushSizeValue'> 5.0 </span>
 					
-					<!-- for adjusting contrast -->
-					<br>
-					<p class="text-info">contrast</p>
-					<p>
-						<span><button class='btn' id='incContrast' onclick='filterCanvas(inContrast)'>increase</button></span>
-						<span>&nbsp;</span>
-						<span><button class='btn' id='decContrast' onclick='filterCanvas(deContrast)'>decrease</button></span>
-					</p>
+			<!-- for adjusting contrast -->
+			<br>
+			<p class="text-info">contrast</p>
+				<p>
+					<span><button class='btn' id='incContrast' onclick='filterCanvas(inContrast)'>increase</button></span>
+					<span>&nbsp;</span>
+					<span><button class='btn' id='decContrast' onclick='filterCanvas(deContrast)'>decrease</button></span>
+				</p>
 					
-					<!-- for adjusting brightness -->
-					<p class="text-info">brightness</p>
-					<p>
-						<span><button class='btn' id='incBrightness' onclick='filterCanvas(incBright)'>increase</button></span>
-						<span>&nbsp;</span>
-						<span><button class='btn' id='decBrightness' onclick='filterCanvas(decBright)'>decrease</button></span>
-					</p>
-			</div>
+			<!-- for adjusting brightness -->
+			<p class="text-info">brightness</p>
+				<p>
+					<span><button class='btn' id='incBrightness' onclick='filterCanvas(incBright)'>increase</button></span>
+					<span>&nbsp;</span>
+					<span><button class='btn' id='decBrightness' onclick='filterCanvas(decBright)'>decrease</button></span>
+				</p>
+		</div>
 			
-	
-	 <div id='filters' class="dropdown">
-		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		<div id='filters' class="dropdown">
+			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 			filters <span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu">
@@ -192,19 +191,18 @@ margin-bottom: 5px;
 				<li onclick='defaultFisheye()'>fisheye</li>
 				<li onclick='reset()'>reset</button>
 			</ul>
-	</div>
-			<!-- color wheel -->
-			<canvas id='colorWheel' height='200' width='200'></canvas>
-			<p id='pickedColor'>color picked goes here</p> 
+		</div>
 			
-			<div id='playPanel'>
-				<p class='text-info'>play panel</p>
-				<button id='forward' class='btn' onclick = 'playForward()'> => </button>
-				<button id='stop' class='btn' onclick = 'stop()'> stop </button>
-				<button id='backward' class='btn' onclick='playBackward()'> <= </button>
-			</div>
-		
-		
+		<!-- color wheel -->
+		<canvas id='colorWheel' height='200' width='200'></canvas>
+		<p id='pickedColor'>color picked goes here</p> 
+			
+		<div id='playPanel'>
+			<p class='text-info'>play panel</p>
+			<button id='forward' class='btn' onclick = 'playForward()'> => </button>
+			<button id='stop' class='btn' onclick = 'stop()'> stop </button>
+			<button id='backward' class='btn' onclick='playBackward()'> <= </button>
+		</div>	
 	</div> <!--end toolbar (right col) -->
  
 </div> <!-- end row-->
