@@ -5,6 +5,7 @@
 <title>drawing/animation app</title>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script src="brushlib.js"></script>
 <script src="filterslib.js"></script>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 <script>
@@ -24,7 +25,7 @@ text-align: center;
 transform: translateX(-300%); 
 transition: .4s;
 position: absolute;
-top: 5%;
+top: 0%;
 text-align: center;
 }
 
@@ -69,7 +70,7 @@ margin: 0 auto;
 display: block;
 }
 
-#filters{
+#filters, #brushes{
 width: 50%;
 margin: 0 auto;
 margin-bottom: 5%;
@@ -101,7 +102,6 @@ background-color: #dddeee;
 margin-top: 5px;
 margin-bottom: 5px;
 }
-
 </style>
 
 <body>
@@ -130,7 +130,7 @@ margin-bottom: 5px;
 			<canvas id="canvas0" width='700' height='700' class='canvas'></canvas> 
 		</div>
 	</div>
-
+	
 	<!-- TOOLBAR -->
 	<div id='rightCol' class='col-sm-3 col-md-3 col-lg-3' style='border: black solid 1px'>
 
@@ -145,7 +145,7 @@ margin-bottom: 5px;
 			<button id = 'import' class='btn' onclick='fileHandler()'>import pic</button>
 			<input id="fileInput" style="display:none;" type="file">
 			<button id='clear' class='btn'>clear</button>
-			<button id='reset' class='btn'>reset</button>
+			<button id='reset' class='btn'>reset brush</button>
 			<button id='#ffffff' class ='color btn'>eraser</button>
 			<button id='addPage' class='btn'>add another layer</button>
 			<button id ='clone' class='btn'> clone current layer</button>
@@ -193,11 +193,21 @@ margin-bottom: 5px;
 				<li onclick='reset()'>reset</button>
 			</ul>
 		</div>
-
+		
+		<div id='brushes' class="dropdown">
+			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			brushes <span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu">
+				<li id='radialGrad' onclick='selectBrush(this.id)'>radial gradient</li>
+				<li id='defaultBrush' onclick='selectBrush(this.id)'>default</li>
+			</ul>
+		</div>
+			
 		<!-- color wheel -->
 		<canvas id='colorWheel' height='200' width='200'></canvas>
 		<p id='pickedColor'>color picked goes here</p> 
-
+			
 		<div id='playPanel'>
 			<p class='text-info'>play panel</p>
 			<button id='forward' class='btn' onclick = 'playForward()'> => </button>
@@ -215,17 +225,21 @@ margin-bottom: 5px;
 
 <script> 
 //check this out! http://perfectionkills.com/exploring-canvas-drawing-techniques/
-var lbrush = 0; 
-var curSize = 5;
-var cbrush = 0;
-var curColor = '#000000'; 
-
-var theCanvas = document.getElementById(curCanvas);
+var theCanvas = document.getElementById(curCanvas); //initial canvas
 var context = theCanvas.getContext("2d");
+var curSize = 5;
+var curColor = '#000000'; 
+var width = theCanvas.width;
+var height = theCanvas.height;
 
 //set initial canvas bg color to white!
 context.fillStyle = "#FFFFFF";
-context.fillRect(0,0,theCanvas.width,theCanvas.height);
+context.fillRect(0, 0, width, height);
+
+//var brushImg = new Image();
+//brushImg.src = 'http://www.tricedesigns.com/wp-content/uploads/2012/01/brush2.png';
+//brushImg.crossOrigin = "Anonymous";
+//var brushOn = true;
 
 //temp arrays store pixel data for current canvas. if you switch frames, these arrays clear.  
 var clickX = [];
@@ -252,18 +266,29 @@ function addClick(x, y, dragging){
 	clickSize.push(curSize);
 }
 
-//undoCounter provides a limit of 9 undos
-var undoCounter;
+//undoCounter provides a limit of 10 undos 
+//the limit is set arbitrarily by storePixelData();
+var undoCounter = undefined;
 
 //undo function
-//get this to work properly. 1 undo works ok, but what about more??
+//should work well now.
 function undo(){
-	if(undoCounter === 0 || undoCounter === undefined){
-		undoCounter = canvasData[curCanvas].length - 1;
-	}
-	if(undoCounter > 0){
-		context.clearRect(0, 0, theCanvas.width, theCanvas.height);
+	if(undoCounter === undefined){
+		//subtract 2, because .length - 1 returns what you just drew (the presumed mistake).
+		//assuming you want the second-to-last thing you drew. 
+		context.clearRect(0, 0, width, height);
+		if(canvasData[curCanvas].length >= 2){
+		undoCounter = canvasData[curCanvas].length - 2;
+		context.putImageData(canvasData[curCanvas][undoCounter], 0, 0);
+		}
+	}else if(undoCounter > 0){
+		context.clearRect(0, 0, width, height);
 		context.putImageData(canvasData[curCanvas][--undoCounter], 0, 0);
+	}else{
+		//start again from latest image data
+		undoCounter = canvasData[curCanvas].length-1;
+		context.clearRect(0, 0, width, height);
+		context.putImageData(canvasData[curCanvas][undoCounter], 0, 0);
 	}
 }
 
@@ -296,10 +321,11 @@ for(var angle = 0; angle <= 5600; angle++){
 }
 
 //pick a color from color wheel
+var colorPicked;
 $('#colorWheel').mousedown(function(e){ 
 	var x = e.offsetX;
 	var y = e.offsetY;
-	var colorPicked = colorWheelContext.getImageData(x, y, 1, 1).data;
+	colorPicked = colorWheelContext.getImageData(x, y, 1, 1).data;
 	var colorPickedText = document.getElementById('pickedColor');
 	
 	colorPickedText.textContent = 'rgb(' + colorPicked[0] + ',' + colorPicked[1] + ',' + colorPicked[2] + ')';
@@ -335,121 +361,40 @@ function toggleToolbar(){
 	}
 }
 
-//define redraw
-function redraw(){
-
-	context.lineJoin = 'round';
-
-	for(var i = 0; i < clickX.length; i++){
-		context.beginPath();
-		//this helps prevent dragging!!! 
-		if(clickDrag[i] && i){ 
-			context.moveTo(clickX[i-1], clickY[i-1]);
-		}else{
-			if(lbrush === 1){
-				cbrush = 0;
-				context.moveTo(clickX[i], clickY[i]+10);
-			}
-			else if(cbrush === 1){
-				lbrush = 0;
-				context.moveTo(clickX[i-2], clickY[i-1]+15);
-				context.lineTo(clickX[i], clickY[i]);
-			}
-			else{
-				context.moveTo(clickX[i], clickY[i]+1);
-			}
-		}
-		context.lineTo(clickX[i], clickY[i]);
-		context.closePath();
-		context.strokeStyle = clickColor[i];
-		context.lineWidth = clickSize[i]; 
-		context.stroke(); 
-	}
-}
-
 //#picture is the container of the canvas, so I used #picture to get the top and left coordinates
 var offsetTop = $('#picture').position()["top"];  
 var offsetLeft = $('#picture').position()["left"];
 
 //define draw 
 function draw(){
-	
-	var paint;
-
-	$('#' + curCanvas).mousedown(function(e){
-		if(e.which === 1){ //when left click only
-			paint = true;
-			var mouseX = e.offsetX;
-			var mouseY = e.offsetY;
-			addClick(mouseX, mouseY);
-			redraw();
-		}
-	});
-
-	$('#' + curCanvas).mousemove(function(e) {
-		if(paint){
-			addClick(e.offsetX, e.offsetY, true);
-			redraw();
-		}
-	});
-
-	$('#' + curCanvas).mouseup(function(e) {
-		clearClick();
-		//log new pixel data every time a canvas is drawn on!
-		pixelData();
-		paint = false;
-	});
-
-	$('#' + curCanvas).mouseleave(function(e){
-		paint = false;
-	});
-
-	$('#clear').click(function(){
-		clearClick();
-		context = document.getElementById(curCanvas).getContext("2d");
-		context.clearRect(0, 0, theCanvas.width, theCanvas.height);
-		context.fillStyle = "#FFFFFF";
-		context.fillRect(0,0,theCanvas.width,theCanvas.height);
-	});
-
-	//for eraser
-	$(".color").click(function(){
-		curColor = this.id;
-	});
-	
-	//reset brush
-	$("#reset").click(function(){
-		cbrush = 0;
-		lbrush = 0;
-		curSize = 5;
-		curColor = '#000000'; 
-	});
-	
-	//not in use
-	$(".size").click(function(){
-		curSize = this.id;
-	});
-	
-	//not in use
-	$("#lbrush").click(function(){
-		clearClick();
-		lbrush = 1;
-		cbrush = 0;
-	});
-
-	//not in use
-	$("#cbrush").click(function(){
-		clearClick();
-		lbrush = 0;
-		cbrush = 1;
-	});
-
+	defaultBrush();
+	radialGradBrush();
 }//end draw function
+
+//clear canvas
+$('#clear').click(function(){
+	clearClick();
+	context = document.getElementById(curCanvas).getContext("2d");
+	context.clearRect(0, 0, width, height);
+	context.fillStyle = "#FFFFFF";
+	context.fillRect(0, 0, width, height);
+});
+
+//for eraser
+$(".color").click(function(){
+	curColor = this.id;
+});
+
+//reset brush
+$("#reset").click(function(){
+	curSize = 5;
+	curColor = '#000000'; 
+});
+
 
 //setting up for adding layers....
 var top = $('#canvas0').position()["top"];  
 var left = $('#canvas0').position()["left"];
-
 //add a new canvas
 function addPage(){
 	
@@ -467,7 +412,7 @@ function addPage(){
 
 	//set canvas bg color to white!
 	$('#' + newId)[0].getContext('2d').fillStyle = "#FFFFFF";
-	$('#' + newId)[0].getContext('2d').fillRect(0,0,theCanvas.width,theCanvas.height);
+	$('#' + newId)[0].getContext('2d').fillRect(0, 0, width, height);
 }
 $("#addPage").click(addPage);
 
@@ -487,56 +432,63 @@ function clonePage(){
 
 	//set canvas bg color to white!
 	$('#' + newId)[0].getContext('2d').fillStyle = "#FFFFFF";
-	$('#' + newId)[0].getContext('2d').fillRect(0,0,theCanvas.width,theCanvas.height);
+	$('#' + newId)[0].getContext('2d').fillRect(0, 0, width, height);
 
 	//get image data for frame you want to clone
-	var canvasToClone = context.getImageData(0, 0, theCanvas.width, theCanvas.height);
+	var canvasToClone = context.getImageData(0, 0, width, height);
 
 	//assign context to new canvas
 	context = document.getElementById(newId).getContext("2d");
 
 	//draw image data of most recent version of current canvas
 	context.putImageData(canvasToClone, 0, 0);
+	
+	//also update canvasData, so that undo will work for clone!
+	canvasData[newId] = [canvasToClone];
 }
 $("#clone").click(clonePage);
 
 //this will hold each canvas' image data (important for cloning and undoing!!)
 var canvasData = {};
 //function for storing/modifying pixel data for each canvas
-function pixelData(){
+function storePixelData(){
 
 	if(canvasData[curCanvas] === undefined){
-		canvasData[curCanvas] = [context.getImageData(0, 0, theCanvas.width, theCanvas.height)];
+		canvasData[curCanvas] = [context.getImageData(0, 0, width, height)];
 	}
 	//if user returns to a previous canvas, add any new pixel data to the  existing array
 	else if(canvasData[curCanvas] !== 'undefined' && canvasData[curCanvas].length < 10){
-		canvasData[curCanvas].push(context.getImageData(0, 0, theCanvas.width, theCanvas.height));
+		canvasData[curCanvas].push(context.getImageData(0, 0, width, height));
 	}
 	else if(canvasData[curCanvas] !== 'undefined' && canvasData[curCanvas].length === 10){
+		//remove the first entry of the array and put in the latest drawing
 		canvasData[curCanvas].shift();
-		canvasData[curCanvas].push(context.getImageData(0, 0, theCanvas.width, theCanvas.height));
+		canvasData[curCanvas].push(context.getImageData(0, 0, width, height));
 	}
 }
 
 //UP
 function up(){
-
+	
+	//reset undo counter
+	undoCounter = undefined;
+	
 	if(curPage < page){
 		curPage = curPage + 1;
 		$('#count').html(curPage);
 		curCanvas = layerArray[curPage];
 	
-		//if canvas wasn't white, you could set this to 1.
-		//but if you keep a white background, curCanvas needs to be somewhat opaque.
-		$('#' + curCanvas).css({"z-index":10, "opacity": .8}); 
+		//if canvas wasn't white, you could set opacity to 1.
+		//but if you keep a white background, curCanvas needs to be somewhat opaque
+		//in order to see the canvas behind it (for animation aiding purposes)
+		$('#' + curCanvas).css({"z-index":10, "opacity": .9}); 
+		
+		//update to correct context
 		context = document.getElementById(curCanvas).getContext("2d");
 
 		for(i=0;i<layerArray.length;i++){
 			if(layerArray[i] !== curCanvas){
 				$('#' + layerArray[i]).css({"z-index":0,"opacity":0});
-				$('#' + layerArray[i]).mousedown(function(){ 
-					paint = false;
-				});
 			}
 		};
 		//set only the second-to-last canvas a lower opacity
@@ -552,12 +504,15 @@ $("#up").click(up);
 
 //DOWN
 function down(){
-
+	
+	//reset undo counter
+	undoCounter = undefined;
+	
 	if(curPage > 0){
 		curPage = curPage - 1;
 		$('#count').html(curPage);
 		curCanvas = layerArray[curPage];
-		$('#' + curCanvas).css({"z-index":10, "opacity": .8});
+		$('#' + curCanvas).css({"z-index":10, "opacity": .9});
 	}
 
 	context = document.getElementById(curCanvas).getContext("2d");
@@ -565,9 +520,6 @@ function down(){
 	for(i=0;i<layerArray.length;i++){
 		if(layerArray[i] !== curCanvas){
 			$('#' + layerArray[i]).css({"z-index":0,"opacity":0});
-			$('#' + layerArray[i]).mousedown(function(){ 
-				paint = false;
-			});
 		}
 	};
 
@@ -597,7 +549,6 @@ $(document).keydown(function(e){
 	e.preventDefault();
 });
 
-
 //functions for animation playback
 var play;
 function playForward(){
@@ -617,13 +568,6 @@ function playBackward(){
 function stop(){
 	clearInterval(play);
 }
-
-$('#colorBg').click(function(){
-	for(i = 0;i < 255; i++){ 
-		context.fillStyle = 'rgb(' + (i-50) + ',' + (i-20) + ',' + (i-10) + ')';
-		context.fillRect(0,i,theCanvas.width,theCanvas.height);
-	}
-});
 
 $(document).ready(function(){
 	$('.dropdown-toggle').dropdown();
