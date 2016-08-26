@@ -118,7 +118,6 @@ function radialGrad(x,y){
 		context.fillRect(x-20, y-20, 40, 40);
 }
 
-/******* ACTIVATE BRUSHES *******/
 //activate radial gradient brush
 function radialGradBrush(){
 if(brushes["radialGrad"] === true && brushFlag === true){
