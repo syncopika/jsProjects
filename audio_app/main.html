@@ -47,7 +47,7 @@ margin-bottom: 12%;
 <p> regular HTML5 audio player here </p>
 <audio id='demo' src='route 205.mp3' controls preload='auto'></audio>
 <p>name of audio file: </p>
-<p id='audioName'></p>
+<p id='audioName'>happy bgm (piano,violin,flute,drums) <a href="http://opengameart.org/content/happy-bgm-pianoviolinflutedrums">link</a></a></p>
 
 <div id='control'>
 <p><b>**tip! 'import audio' will import your selected audio file to both the default audio player and to 'audio player 2'. ***</b></p>
@@ -57,7 +57,7 @@ margin-bottom: 12%;
 
 <div id='player2' class='row'>
 	<p>modified audio player using Web Audio API here: (player 2)</p>
-    <div id='progressBar'></div>
+	<div id='progressBar'></div>
 	<p id='songLength'></p>
 	<button id='play' class='btn'>play audio file</button>
 	<button id='stop' class='btn'>stop audio file</button>
@@ -151,26 +151,6 @@ var distortionControl = document.querySelector('.distortion-control');
 var distortionValue;
 var playBar; //set progress bar increment
 
-
-// The below is for testing out modification of streaming from the html audio element.
-// unfortunately, it seems that playback will function just like with the Web Audio API, in which you can't just scroll
-// to wherever part you want in the music, which makes sense though since the audio data has to be modified sequentially (I think?).
-// the below will only work in a local host setting, due to CORS.
-
-window.addEventListener('load', function(e){
-		//source2 = audioCtx.createMediaElementSource(audioFile); UNCOMMENT THIS TO ACTIVATE (only in local host setting!)
-		biquadFilter = audioCtx.createBiquadFilter();
-		biquadFilter.type = "lowpass";
-		biquadFilter.frequency.value = 0;//biquadControlFq.value;
-		//biquadFilter.gain.value = 20;
-		biquadFilter.Q.value = 0;
-		biquadFilter.connect(audioCtx.destination);
-		//source2.connect(biquadFilter);
-		//source2.connect(audioCtx.destination);
-},false);
-
-// END TEST
-
 function makeDistortionCurve(amount){
 			var k = amount, //typeof amount === 'number' ? amount : 50,
 			n_samples = 44100,
@@ -184,12 +164,10 @@ function makeDistortionCurve(amount){
 		return curve;	
 		};
  
-
-
-
 //now load and decode sound once sound system initialized (and after user has selected a sound file!)
 function loadFile(){
 	var request = new XMLHttpRequest();
+	//after reading in a file as a URL, pass it to the request
 	request.open("GET", fileURL, true);
 	request.responseType = 'arraybuffer';
 	request.onload = function(){
@@ -257,7 +235,6 @@ function offKaraoke(){
 
 //increment progress bar 1px every second. 	
 var counter = 0;
-
 function timer(){
 	counter+=1*playbackControl.value;
 	ctx.fillStyle = "green";
