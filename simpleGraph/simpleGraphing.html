@@ -3,19 +3,25 @@
 
 <style>
 #graph{
-margin-top: 2%;
-border: 1px solid black;
-opacity: .6;
+	/*margin-top: 2%;*/
+	display: block;
+	margin: 0 auto;
+	border: 1px solid black;
+	opacity: .6;
 }
 label{
-margin-top: 10px;
+	margin-top: 10px;
 }
 #middle{
-padding-bottom: 30px;
+	padding-bottom: 30px;
+}
+h1{
+	text-align:center;
 }
 </style>
 
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>simple graphing</title>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
@@ -24,29 +30,26 @@ padding-bottom: 30px;
 <body>
 <!-- a canvas should go here so we can plot coordinates! -->
 <!-- and an input box to input number of coordinates needed, for inputting value of x, and the equation! -->
+<div class='row'>
 
-<div class='col-md-4'></div>
+	<div class='col-md-4 col-sm-4 col-md-offset-4 col-sm-offset-4' id='middle'>
+		<h1>simple graphing app</h1>
 
-<div class='col-md-4' id='middle'>
-<h1>simple graphing app</h1>
+		<canvas id='graph' height='600' width='600'></canvas>
 
-<canvas id='graph' height='600' width='600'></canvas>
+		<label for='formula'>please enter your formula like this: 2x^2+5.</label>
+		<input type='text' id='formula'>
 
-<label for='formula'>please enter your formula like this: 2x^2+5.</label>
-<input type='text' id='formula'>
+		<label for='coord'>please enter the number of coordinates you need.</label>
+		<input type='text' id='coord'>
 
-<label for='coord'>please enter the number of coordinates you need.</label>
-<input type='text' id='coord'>
+		<button id='doGraph' class='btn'>graph!</button>
+		<button id='clearGraph' class='btn'>clear?</button>
+		<button id='connect' class='btn'>connect points?</button>
 
-<button id='doGraph' class='btn'>graph!</button>
-<button id='clearGraph' class='btn'>clear?</button>
-<button id='connect' class='btn'>connect points?</button>
-
-<div id='table'></div>
-
-</div> <!-- end middle column -->
-
-<div class='col-md-4'></div>
+		<div id='table'></div>
+	</div> <!-- end middle column -->
+</div>
 
 </body>
 
