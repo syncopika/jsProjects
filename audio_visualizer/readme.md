@@ -1,4 +1,4 @@
-    http://syncopika.tumblr.com/audiovisual
+http://syncopika.tumblr.com/audiovisual
     
 1. <b>audioVisualiser</b>    
 focused on using the canvas API for drawing lines and stuff corresponding to the data given via getByteTimeDomainData.
