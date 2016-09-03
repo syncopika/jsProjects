@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>ascii art</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+</head>
+
+<style>
+#getFile{
+	display: none;
+}
+#ascii{
+	display:block;
+}
+#buttons{
+	text-align: center;
+}
+p{
+	text-align:center;
+}
+</style>
+
+
+<body>
+<div id='buttons'>
+	<canvas height='90' width='90' id='theCanvas'></canvas>
+	<button class='btn' onclick='handleFiles()'>get pic</button>
+	<button class='btn' onclick='getAscii()'>get ascii art</button>
+	<button class='btn' onclick='clearPic()'>clear</button>
+	<button class='btn' onclick='highlight()'>highlight</button>
+	<input id='getFile' type='file' />
+	<canvas height='90' width='90' id='theCanvas2'></canvas>
+</div>
+
+<div id='ascii'>
+</div>
+
+</body>
+
+
+<script>
+
+//try this: grayscale picture, then apply ascii. it'll be easier to differentiate color and set up boundaries.
+//(but that means more discerning shades of grey and black are necessary)
+
+var img = new Image();
+var context = document.getElementById('theCanvas').getContext('2d');
+var context2 = document.getElementById('theCanvas2').getContext('2d');
+var canvas = document.getElementById('theCanvas');
+var height = canvas.height;
+var width = canvas.width;
+
+function handleFiles(){
+	var fileGet = document.getElementById('getFile');
+	fileGet.addEventListener('change', getFile, false);
+	fileGet.click(); //simulate click event
+}
+
+function getFile(e){
+	var fileReader = new FileReader();
+	var file = e.target.files[0];
+
+	img.onload = function(){
+		context.drawImage(img, 0, 0, width, height);
+		context2.drawImage(img, 0, 0, width, height);
+		document.querySelector('#getFile').value = null;
+	}
+	fileReader.onloadend = function(){
+		img.src = fileReader.result;
+	}
+	fileReader.readAsDataURL(file);
+}
+
+function getAscii(){
+	var div = document.getElementById("ascii");
+	var data = context.getImageData(0,0,width,height).data;
+	counter = 0;
+	var line = "<p>";
+	for(var i = 0; i < data.length; i+=4){
+		var r = data[i];
+		var g = data[i+1];
+		var b = data[i+2];
+		
+		var grayScale = Math.floor ( (r+g+b) / 3 );
+		//r,g,b = Math.floor(grayScale);
+		
+		if(counter === width){
+			counter = 0;
+			line += "</p>";
+			$('#ascii').append(line);
+			line = "<p>";
+		}
+		
+		//evaluate the grey
+		//have boolean for white, super light grey, light grey, grey, dark grey, darker grey, black
+		var white = (grayScale >= 240);
+		var black = (grayScale >= 0 && grayScale < 40); 
+		var darkerGrey = (grayScale >= 40 && grayScale <= 55); 
+		var darkGrey = (grayScale > 55 && grayScale <= 90); 
+		var grey = (grayScale > 90 && grayScale <= 100); 
+		var lightGrey = (grayScale > 100 && grayScale <= 160);
+		var mdLightGrey = (grayScale > 160 && grayScale < 200);
+		var superLightGrey = (grayScale >= 200 && grayScale < 240);
+		
+		if(grey){
+			line += "%%";		
+		}else if(black){
+			line += "**";
+		}else if(white){
+			line += "++";
+		}else if(darkerGrey){
+			line += "##";
+		}else if(darkGrey){
+			line += "__";
+		}else if(lightGrey){
+			line += "^^";
+		}else if(mdLightGrey){
+			line += "///";
+		}else if(superLightGrey){
+			line += "$$";
+		}
+		counter++;
+	}
+}
+
+function clearPic(){
+	var div = document.getElementById('ascii');
+	div.innerHTML = '';
+}
+
+function highlight(){
+	$('p').css('background-color', 'steelblue');
+	$('p').css('color', '#FFF');
+}
+
+
+</script>
+
+
+</html>
