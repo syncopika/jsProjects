@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<!-- https://catalog.data.gov/dataset/school-improvement-2010-grants -->
+
+<html>
+
+<head>
+	<title>some data</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+</head>
+
+<style>
+.row{
+	text-align: center;
+}
+h2{
+	text-align:center;
+}
+path:hover{
+	opacity: .7;
+}
+
+/*
+rect{
+	fill: steelblue;
+}*/
+
+.footer{
+	height: 150px;
+}
+</style>
+
+<body>
+
+<div class='container-fluid'>
+
+<h2>2010 education grant data</h2>
+<h3> some info: </h3>
+<p>Florida received the highest amount. North Dakota received the lowest.</p>
+<p>Texas, Maine, some state and another state were not accounted for. </p>
+	
+	<div class='row'>
+		<div class='col-md-12'>
+			
+			<!-- money vs. state -->
+			<svg class='chart'>
+			</svg>
+			
+			<!-- money vs. state map form -->
+			<svg class='chart2'>
+			</svg>
+		</div>
+	</div>
+	
+	<div class='row'>
+		<div class='col-md-12'>
+			
+			<!-- model vs. state -->
+			<svg class='chart3'>
+			</svg>
+			
+			<!-- model vs. state map form -->
+			<svg class='chart4'>
+			</svg>
+		</div>
+	</div>
+	
+	<div class='footer'></div>
+	
+</div>
+</body>
+
+
+<script>
+//try mapping data using a map of the US!
+//also do a states vs. money chart too
+//and states vs. model selected
+
+//set up chart 1
+var margin = {left: 80, right: 50, top: 50, bottom: 50};
+var height = 500 - margin.top - margin.bottom;
+var width = 750 - margin.left - margin.right;
+
+var chart = d3.select('.chart')
+			  .attr("height", height + margin.bottom + margin.top)
+			  .attr("width", width + margin.left + margin.right)
+			  .append("g")
+			  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			  
+var xChart1 = d3.scaleBand()
+				.range([0, width]);
+var yChart1 = d3.scaleLinear()
+				.range([height, 0]);
+var xAxis1 = d3.axisBottom(xChart1);
+var yAxis1 = d3.axisLeft(yChart1);
+
+//chart 2
+var height2 = 500;
+var width2 = 960;
+var chart2 = d3.select(".chart2")
+				.attr("height", height2)
+				.attr("width", width2);
+				
+var projection = d3.geoAlbersUsa()
+					.translate([width2/2, height2/2])
+					.scale([900]);
+					
+var path = d3.geoPath()
+			.projection(projection);
+			
+			
+//chart 3
+//should share same dimensions as chart1
+var height3 = 500 - margin.top - margin.bottom;
+var width3 = 810 - margin.left - margin.right;
+var chart3 = d3.select('.chart3')
+				.attr('height', height3 + margin.top + margin.bottom)
+				.attr('width', width3 + margin.left + margin.right)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+				
+var xChart3 = d3.scaleBand()
+				.rangeRound([0, width3])
+				.padding(0.1)
+				.align(0.1);
+				
+var yChart3 = d3.scaleLinear()
+				.rangeRound([height3, 0]);
+				
+var xAxis3 = d3.axisBottom(xChart3);
+var yAxis3 = d3.axisLeft(yChart3);
+				
+
+d3.csv("2010schoolgrants.csv", function(data){
+	
+	var data1 = {};
+	var data2 = {};
+	for(var i = 0; i < data.length; i++){
+		var state = data[i]["State"];
+		var cost = data[i]["2010/11/Award Amount"];
+		cost = parseInt(cost.substring(1, cost.length));
+		
+		if(isNaN(cost)){
+			cost = 0;
+		}	
+		if(data1[state] === undefined){
+			data1[state] = cost;
+		}else{
+			data1[state] += cost;
+		}
+		
+		//info for data2. sample: {"State" : "MD", "transformation" : 0, "restart" : 0, "turnaround" : 0, "closure" : 0}
+		var model = data[i]["Model Selected"];
+		var data2bit = {};
+		
+		if(data2[state] !== undefined){
+			//if state already exists in the array
+			//increment by 1 the model selected for that particular data entry
+			data2[state][model]++;
+		}else{
+			data2bit["state"] = state;
+			data2bit["Transformation"] = 0;
+			data2bit["Restart"] = 0;
+			data2bit["Turnaround"] = 0;
+			data2bit["Closure"] = 0;
+			data2bit[model]++;
+			data2[state] = data2bit;
+		}
+	}
+	//console.log(data2);
+	//clear out any states that have 0
+	var data = [];
+	for(state in data1){
+		if(data1[state] === 0){
+			delete data1[state];
+		}else{
+			var dataChunk = {};
+			dataChunk["state"] = state;
+			dataChunk["cost"] = data1[state];
+			data.push(dataChunk);
+		}
+	}	
+	//console.log(data);
+	var barWidth = width / data.length;
+	//set domains for each axis
+	yChart1.domain([0, d3.max(data, function(d){ return d.cost }) ]);
+	xChart1.domain( data.map(function(d){ return d.state }) );
+	var bar = chart.selectAll("g")
+					.data(data)
+					.enter()
+					.append("g") //g element for every data piece
+					.append("rect") //put a "rect" in every g element
+					.attr("x", function(d, i){ return i * barWidth }) //position each rect - x coords
+					.attr("y", function(d){ return yChart1(d.cost) })//d refers to one data chunk in the set
+					.attr("height", function(d){ return height - yChart1(d.cost) })
+					.attr("width", barWidth - 1);
+					
+	//add left axis
+	chart.append("g")
+		.attr("class", "yAxis")
+		.call(yAxis1);
+	
+	//add label to y axis
+	chart
+		.append("text")
+		.attr("transform", "translate(" + (-70) +  "," + (height+margin.bottom)/2 + ") rotate(-90)")
+		.text("cost in US dollars");
+	
+	//add bottom axis
+	chart.append("g")
+		.attr("class", "xAxis")
+		//put the x axis at the bottom
+		.attr("transform", "translate(0," + height + ")")
+		.call(xAxis1)
+		.selectAll("text")
+			.style("text-anchor", "end")
+			.attr("dx", "-.8em")
+			.attr("dy", ".15em")
+			.attr("transform", function(d){
+				return "rotate(-65)";
+			});		
+
+//chart3
+var data2set = [];
+
+//get rid of any states with all 0s for every property
+for(state in data2){
+	for(property in data2[state]){
+		if(data2[state][property] > 0 && (typeof data2[state][property] === "number")){
+			data2set.push(data2[state]);
+			break;
+		}
+	}
+}
+
+//helper function for getting the total in a set of numerical properties for an object
+function getTotal(object){
+	var total = 0;
+	for(property in object){
+		if(typeof object[property] === 'number'){
+				total += object[property];
+		}
+	}
+	return total;
+}
+
+xChart3.domain(data2set.map(function(d){ return d.state }));
+yChart3.domain([0, d3.max(data2set, function(d){ return getTotal(d) })]);
+
+var barWidth3 = width3 / data2set.length;
+//overlay 4 rectangles of different colors
+//info for data2. sample: {"State" : "MD", "transformation" : 0, "restart" : 0, "turnaround" : 0, "closure" : 0}
+//helpful! https://bl.ocks.org/mbostock/3886208
+//use stacks!!
+var stack = d3.stack()
+			.keys(["Closure", "Restart", "Transformation", "Turnaround"]);
+
+//after specifying to 'stack' which keys to look for, pass it the data set
+var series = stack(data2set);
+			
+var colors = d3.scaleOrdinal()
+				.range(["#000000", "steelblue", "#A9A9A9", "#dddfff"])
+				.domain(["Closure", "Restart", "Transformation", "Turnaround"]);
+
+//console.log(data2set);		
+chart3.selectAll(".serie")
+				.data(series)
+				.enter()
+				.append("g")
+				.attr("class", "serie")
+				.attr("fill", function(d){ return colors(d.key); })
+				.selectAll("rect")
+					.data(function(d){console.log(d); return d;})
+					.enter()
+					.append("rect")
+					.attr("x", function(d){ return xChart3(d.data.state); })
+					.attr("y", function(d){ return yChart3(d[1]); } )
+					.attr("height", function(d){ return yChart3(d[0]) - yChart3(d[1]); })
+					.attr("width", xChart3.bandwidth());
+					//.attr('fill', 'steelblue');
+
+/*	
+var rect2 = chart3.selectAll("g")
+				.data(data2set)
+				.enter()
+				.append("rect")
+				.attr("x", function(d, i){ return i*barWidth3 })
+				.attr("y", function(d){ return yChart3(d.Restart) })
+				.attr("width", function(d, i){ return barWidth3 - 1})
+				.attr("height", function(d){ return height3 - yChart3(d.Restart)})
+				.attr('fill', 'green');
+
+/*
+var rect3 = chart3.selectAll("g")
+				.data(data2set)
+				.enter()
+				.append("rect")
+				.attr("x", function(d, i){ return i*barWidth3 + 1})
+				.attr("y", function(d){ return yChart3(d.Turnaround) })
+				.attr("width", function(d, i){ return barWidth3 - 1})
+				.attr("height", function(d){ return height - yChart3(d.Turnaround)})
+				.attr('fill', '#d9d9d9');
+				
+var rect4 = chart3.selectAll("g")
+				.data(data2set)
+				.enter()
+				.append("rect")
+				.attr("x", function(d, i){ return i*barWidth3 + 1})
+				.attr("y", function(d){ return yChart3(d.Closure) })
+				.attr("width", function(d, i){ return barWidth3 - 1})
+				.attr("height", function(d){ return height - yChart3(d.Closure)})
+				.attr('fill', 'A9A9A9');
+*/			
+//left axis
+chart3.append("g")
+	.attr("class", "yAxis3")
+	.call(yAxis3)
+		  
+//bottom axis
+chart3.append("g")
+	.attr("class", "xAxis3")
+	.attr("transform", "translate(0," + height3 + ")")
+	.call(xAxis3)
+	.selectAll("text")
+	.style("text-anchor", "end")
+	.attr("dx", "-.8em")
+	.attr("dy", ".15em")
+	.attr("transform", function(d){
+		return "rotate(-65)";
+	});
+				
+//chart2 = US MAP
+//resource: http://bl.ocks.org/michellechandra/0b2ce4923dc9b5809922
+//additional resource: https://gist.github.com/mshafrir/2646763
+//data (thanks!): https://gist.githubusercontent.com/michellechandra/0b2ce4923dc9b5809922/raw/a476b9098ba0244718b496697c5b350460d32f99/us-states.json
+//look through JSON file to find states that match up the ones in my dataset
+//then put the info I'm interested in from my dataset to the JSON file
+//each state has a properties object in the JSON, so you can add the dataset info there
+//for this chart, we'll look at total funds per state. ideally, each state's color darkness
+//should be proportional to the funding.
+d3.json("us-states.json", function(json){
+	
+	//edit the json data to include abbreviated state names
+	d3.json("states.json", function(names){
+		for(var i = 0; i < json.features.length; i++){
+			//loop through all the states (key values) in names and find a match
+			for(state in names){
+				if(names[state] === json.features[i].properties.name){
+				     json.features[i].properties.abbr = state;
+				}
+			}
+		}//end outer for loop
+		
+	for(var i = 0; i < data.length; i++){
+		//remember you're using state abbreviations!
+		var name = data[i]["state"];
+		var value = data[i]["cost"];
+
+		for(var j = 0; j < json.features.length; j++){
+			//json.features returns an array of all the states as objects! [{},{},{}]
+			var jsonState = json.features[j].properties.abbr;
+			if(name === jsonState){
+				//add a new key and value pair to the json file corresponding to the state present in my dataset
+				json.features[j].properties.costValue = value;
+				//if the state is found, leave the json file and move on to the next state in my dataset
+				break;
+			}
+		}
+	}
+	//after json file is updated, draw the map!
+	chart2.selectAll("path")
+	  .data(json.features)
+	  .enter()
+	  .append("path")
+	  .attr("d", path)
+	  .style("stroke", "#FFF")
+	  .style("stroke-width", 1)
+	  .style("fill", function(d){if(d.properties.costValue){ 
+		//middle range of data should be steelblue
+		//upper range should get darker
+		//lower range should get lighter
+		return getColor(parseInt(d.properties.costValue));//"steelblue"; 
+		}else{
+		return 'A9A9A9';
+		} 
+		});
+
+	});//end inner json function
+});//end json file 
+
+//max: 43138859
+//min: 418574
+//total: 318566716
+function getColor(number){
+	//first get delta
+	var total = 318566716;
+	var delta = 1 - (total - number)/total;
+	//multiply delta by some arbitrary number (but make sure it will be within 0 - 255)
+	var factor = delta * 1000;
+	//factor is what will be added to r, g, and b to get a darker shade if the number passed
+	//was a large number. lighter if smaller.
+	//I picked steelblue as the starting color.
+	var r = Math.round( 70 - factor );
+	var g = Math.round( 130 - factor );
+	var b = Math.round( 180 - factor );
+	//console.log("rgb(" + r + "," + g + "," + b + ")");
+	return "rgb(" + r + "," + g + "," + b + ")";
+}
+
+			
+})//end data
+
+</script>
+
+
+</html>
