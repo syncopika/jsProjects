@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- https://catalog.data.gov/dataset/school-improvement-2010-grants -->
-
+<!-- https://en.wikipedia.org/wiki/School_Improvement_Grant -->
 <html>
 
 <head>
@@ -21,10 +21,9 @@ path:hover{
 	opacity: .7;
 }
 
-/*
-rect{
+.chart rect{
 	fill: steelblue;
-}*/
+}
 
 .footer{
 	height: 150px;
@@ -34,12 +33,7 @@ rect{
 <body>
 
 <div class='container-fluid'>
-
-<h2>2010 education grant data</h2>
-<h3> some info: </h3>
-<p>Florida received the highest amount. North Dakota received the lowest.</p>
-<p>Texas, Maine, some state and another state were not accounted for. </p>
-	
+	<h2>2010 education grant data</h2>
 	<div class='row'>
 		<div class='col-md-12'>
 			
@@ -66,6 +60,14 @@ rect{
 		</div>
 	</div>
 	
+	<div class='row'>
+		<div class='col-md-12'>
+		<h3> some info: </h3>
+		<p>Florida received the highest amount. North Dakota received the lowest.</p>
+		<p>Texas, Maine, some state and another state were not accounted for. </p>
+		</div>
+	</div>
+	
 	<div class='footer'></div>
 	
 </div>
@@ -80,7 +82,7 @@ rect{
 //set up chart 1
 var margin = {left: 80, right: 50, top: 50, bottom: 50};
 var height = 500 - margin.top - margin.bottom;
-var width = 750 - margin.left - margin.right;
+var width = 650 - margin.left - margin.right;
 
 var chart = d3.select('.chart')
 			  .attr("height", height + margin.bottom + margin.top)
@@ -97,7 +99,7 @@ var yAxis1 = d3.axisLeft(yChart1);
 
 //chart 2
 var height2 = 500;
-var width2 = 960;
+var width2 = 860;
 var chart2 = d3.select(".chart2")
 				.attr("height", height2)
 				.attr("width", width2);
@@ -168,7 +170,6 @@ d3.csv("2010schoolgrants.csv", function(data){
 			data2[state] = data2bit;
 		}
 	}
-	//console.log(data2);
 	//clear out any states that have 0
 	var data = [];
 	for(state in data1){
@@ -181,7 +182,6 @@ d3.csv("2010schoolgrants.csv", function(data){
 			data.push(dataChunk);
 		}
 	}	
-	//console.log(data);
 	var barWidth = width / data.length;
 	//set domains for each axis
 	yChart1.domain([0, d3.max(data, function(d){ return d.cost }) ]);
@@ -260,7 +260,7 @@ var stack = d3.stack()
 var series = stack(data2set);
 			
 var colors = d3.scaleOrdinal()
-				.range(["#000000", "steelblue", "#A9A9A9", "#dddfff"])
+				.range(["#000000", "#A9A9A9", "steelblue", "#dddfff"])
 				.domain(["Closure", "Restart", "Transformation", "Turnaround"]);
 
 //console.log(data2set);		
@@ -278,40 +278,31 @@ chart3.selectAll(".serie")
 					.attr("y", function(d){ return yChart3(d[1]); } )
 					.attr("height", function(d){ return yChart3(d[0]) - yChart3(d[1]); })
 					.attr("width", xChart3.bandwidth());
-					//.attr('fill', 'steelblue');
 
-/*	
-var rect2 = chart3.selectAll("g")
-				.data(data2set)
-				.enter()
-				.append("rect")
-				.attr("x", function(d, i){ return i*barWidth3 })
-				.attr("y", function(d){ return yChart3(d.Restart) })
-				.attr("width", function(d, i){ return barWidth3 - 1})
-				.attr("height", function(d){ return height3 - yChart3(d.Restart)})
-				.attr('fill', 'green');
+//legend 
+var legend = chart3.selectAll(".legend")
+					.data(["Closure", "Restart", "Transformation", "Turnaround"])
+					.enter()
+					.append("g")
+					.attr("class", "legend")
+					.attr("transform", function(d,i){ return "translate(0," + i*20 + ")" })
+					.style("font", "10px sans-serif");
 
-/*
-var rect3 = chart3.selectAll("g")
-				.data(data2set)
-				.enter()
-				.append("rect")
-				.attr("x", function(d, i){ return i*barWidth3 + 1})
-				.attr("y", function(d){ return yChart3(d.Turnaround) })
-				.attr("width", function(d, i){ return barWidth3 - 1})
-				.attr("height", function(d){ return height - yChart3(d.Turnaround)})
-				.attr('fill', '#d9d9d9');
-				
-var rect4 = chart3.selectAll("g")
-				.data(data2set)
-				.enter()
-				.append("rect")
-				.attr("x", function(d, i){ return i*barWidth3 + 1})
-				.attr("y", function(d){ return yChart3(d.Closure) })
-				.attr("width", function(d, i){ return barWidth3 - 1})
-				.attr("height", function(d){ return height - yChart3(d.Closure)})
-				.attr('fill', 'A9A9A9');
-*/			
+	legend.append("rect")
+			.attr("x", width3 - 18)
+			.attr("width", 18)
+			.attr("height", 16)
+			.attr("stroke", "black")
+			.attr("stroke-width", 1)
+			.attr("fill", colors);
+			
+	legend.append("text")
+			.attr("x", width3 - 24)
+			.attr("y", 9)
+			.attr("dy", ".35em")
+			.attr("text-anchor", "end")
+			.text(function(d){ return d });
+
 //left axis
 chart3.append("g")
 	.attr("class", "yAxis3")
