@@ -89,7 +89,13 @@ var chart = d3.select('.chart')
 			  .attr("width", width + margin.left + margin.right)
 			  .append("g")
 			  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-			  
+
+	chart.append("text")
+		.text("cost vs. state")
+		.attr("x", width/3)
+		.attr("y", -10)
+		.style("font", "18px sans-serif");
+			 
 var xChart1 = d3.scaleBand()
 				.range([0, width]);
 var yChart1 = d3.scaleLinear()
@@ -103,19 +109,62 @@ var width2 = 860;
 var chart2 = d3.select(".chart2")
 				.attr("height", height2)
 				.attr("width", width2);
-				
+
+chart2.append("text")
+		.text("cost by state")
+		.attr("x", (width2+margin.left)/3)
+		.attr("y", 40)
+		.style("font", "18px sans-serif");
+			
 var projection = d3.geoAlbersUsa()
 					.translate([width2/2, height2/2])
 					.scale([900]);
 					
 var path = d3.geoPath()
 			.projection(projection);
-			
-			
+
+//set up a gradient legend for the map
+//resource: http://bl.ocks.org/darrenjaworski/5397362
+var mapLegend = d3.select(".chart2")
+					.append("svg")
+					.attr("width", 200)
+					.attr("height", 30)
+					.attr("x", width2/2 + 30)
+					.attr("y", 30);
+					
+var gradient = mapLegend.append("defs")
+						.append("linearGradient")
+						.attr("id", "gradient")
+						.attr("x1", "0%")
+						.attr("x2", "100%")
+						.attr("y1", "100%")
+						.attr("y2", "100%")
+						.attr("spreadMethod", "pad");
+					
+gradient.append("stop").attr("offset", "40%").attr("stop-color", "rgb(68,128,178)").attr("stop-opacity", 1);
+gradient.append("stop").attr("offset", "100%").attr("stop-color", "rgb(0,0,45)").attr("stop-opacity", 1);
+
+mapLegend.append("rect")
+		.attr("width", 100)
+		.attr("height", 10)
+		.style("fill", "url(#gradient)");
+
+mapLegend.append("rect")
+		.attr("width", 10)
+		.attr("height", 10)
+		.style("fill", "rgb(169, 169, 169");
+
+var mapLegendX = d3.scaleOrdinal()
+					.range([0, 100]);
+					
+var mapLegendAxis = d3.axisBottom(mapLegendX)
+					  .tickValues([10000, 50000]); //change these values
+
+	
 //chart 3
 //should share same dimensions as chart1
 var height3 = 500 - margin.top - margin.bottom;
-var width3 = 810 - margin.left - margin.right;
+var width3 = 800 - margin.left - margin.right;
 var chart3 = d3.select('.chart3')
 				.attr('height', height3 + margin.top + margin.bottom)
 				.attr('width', width3 + margin.left + margin.right)
@@ -133,7 +182,6 @@ var yChart3 = d3.scaleLinear()
 var xAxis3 = d3.axisBottom(xChart3);
 var yAxis3 = d3.axisLeft(yChart3);
 				
-
 d3.csv("2010schoolgrants.csv", function(data){
 	
 	var data1 = {};
@@ -260,7 +308,7 @@ var stack = d3.stack()
 var series = stack(data2set);
 			
 var colors = d3.scaleOrdinal()
-				.range(["#000000", "#A9A9A9", "steelblue", "#dddfff"])
+				.range(["rgb(255,117,120)", "rgb(255,240,112)", "rgb(105,255,122)", "rgb(129,173,255)"])
 				.domain(["Closure", "Restart", "Transformation", "Turnaround"]);
 
 //console.log(data2set);		
@@ -325,9 +373,6 @@ chart3.append("g")
 //resource: http://bl.ocks.org/michellechandra/0b2ce4923dc9b5809922
 //additional resource: https://gist.github.com/mshafrir/2646763
 //data (thanks!): https://gist.githubusercontent.com/michellechandra/0b2ce4923dc9b5809922/raw/a476b9098ba0244718b496697c5b350460d32f99/us-states.json
-//look through JSON file to find states that match up the ones in my dataset
-//then put the info I'm interested in from my dataset to the JSON file
-//each state has a properties object in the JSON, so you can add the dataset info there
 //for this chart, we'll look at total funds per state. ideally, each state's color darkness
 //should be proportional to the funding.
 d3.json("us-states.json", function(json){
