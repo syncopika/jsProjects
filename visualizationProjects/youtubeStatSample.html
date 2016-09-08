@@ -14,13 +14,13 @@
 	
 	<style>
 	.chart1, .chart3, .chart5{
-	display: block;
-	float: right;
+		display: block;
+		float: right;
 	}
 	
 	.chart2, .chart4{
-	display: block;
-	margin: 0 auto;
+		display: block;
+		margin: 0 auto;
 	}
 	
 	h2{
@@ -75,7 +75,7 @@
 	.radio{
 		text-align: center;
 	}
-
+	
 	</style>
 	
 </head>
@@ -150,15 +150,15 @@
 		
 		<div class='col-md-6'>
 			<h2>time watched per day from 07-11-16 to 08-07-16</h2>
-			<p style='display: inline; padding-right: 62%; padding-left: 6%;'><b>07/11/16: 49 </b></p>  <p style='display: inline;'><b>08/07/16: 51</b></p>
-			</div>
-				<svg class='chart6'>
+			<p style='display: inline; padding-right: 60%; padding-left: 6%;'><b>07/11/16: 49 </b></p>  <p style='display: inline;'><b>08/07/16: 51</b></p>
+			<svg class='chart6'>
 				</svg>
 			<p><b>additional commentary:</b> based on the above chart, I would say I'm maintaining a pretty ok average play-time for my videos. Additionally, based on charts 3-4, you can see that males make up an overwhelming majority of my demographics. 
 			The majority of plays tends to come from the younger range (18-24) of ages from both genders. This makes sense, considering most of my videos are arrangements of Japanese anime music. It also appears, based on this data, then that Japanese anime
 			tends to be most popular with males.</p>
 		</div>
 	</div>
+</div>
 	
 	<div class='row footer'>
 	</div>
@@ -289,7 +289,7 @@ d3.csv("playbackLocation.csv", function(data){
 		playDate.push(newHash);
 	}
 	
-	sortedData = sortedData.sort(function(a, b){if(a.value > b.value){return -1}else{return 1}});
+	sortedData = sortedData.sort(function(a, b){if(a.value > b.value){return -1;}else{return 1;}});
 		
 	//data should be all set up now
 	var barWidth = width / sortedData.length;
@@ -477,8 +477,8 @@ var line = d3.line()
 			.y(function(d){ return yChart6( d.value )});
 
 chart6.append("path")
-	   //interesting. with .datum, playDate does not need to be in an array []. if you use .data, playDate needs to be like [playDate]
-	   //I guess it makes sense: datum refers to one piece of data (singular), i.e. the data is being attached to only one SVG element. 
+	   //interesting. .data(playDate) shows only each data point, while .datum(playDate) shows all the dots connected 
+	   //but if you do .data([playDate]), you'll get the same result as with .datum(playDate). 
 	  .datum(playDate)
 	  .attr("class", "line")
 	  .attr("d", line);
@@ -606,7 +606,7 @@ function update(data){
 	xChart3.domain(data.map(function(d){ return d.viewer_age; }) );
 	//set domain for y axis
 	yChart3.domain( [0, d3.max(data, function(d){ return +d.watch_time_minutes; })] );
-	
+
 	//get the width of each bar 
 	var barWidth = width / data.length;
 	
