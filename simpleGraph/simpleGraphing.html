@@ -10,13 +10,13 @@
 	opacity: .6;
 }
 label{
-	margin-top: 10px;
-}
-#middle{
-	padding-bottom: 30px;
+	margin-top: 15px;
 }
 h1{
 	text-align:center;
+}
+.submit{
+	margin-left: 10px;
 }
 </style>
 
@@ -33,20 +33,26 @@ h1{
 <div class='row'>
 
 	<div class='col-md-4 col-sm-4 col-md-offset-4 col-sm-offset-4' id='middle'>
-		<h1>simple graphing app</h1>
+		<h1>simple graphing</h1>
 
 		<canvas id='graph' height='600' width='600'></canvas>
-
-		<label for='formula'>please enter your formula like this: 2x^2+5.</label>
-		<input type='text' id='formula'>
-
-		<label for='coord'>please enter the number of coordinates you need.</label>
-		<input type='text' id='coord'>
-
-		<button id='doGraph' class='btn'>graph!</button>
-		<button id='clearGraph' class='btn'>clear?</button>
-		<button id='connect' class='btn'>connect points?</button>
-
+		
+		<div class='submit'>
+			<label for='formula'>please enter your formula like this: 2x^2+5.</label>
+			<input type='text' id='formula'>
+		</div>
+		
+		<div class='submit'>
+			<label for='coord'>please enter the number of coordinates you need.</label>
+			<input type='text' id='coord'>
+		</div>
+		
+		<div class='submit'>
+			<button id='doGraph' class='btn'>graph!</button>
+			<button id='clearGraph' class='btn'>clear?</button>
+			<button id='connect' class='btn'>connect points?</button>
+		</div>
+		
 		<div id='table'></div>
 	</div> <!-- end middle column -->
 </div>
@@ -65,26 +71,34 @@ var yCoord = []; //store y coordinates here
 
 //helper function
 //equationComponents is supposed to be an array(the equation split up into chunks)
-//this function actually does the math for each x coordinate passed to it.
+//this function actually does the math for each x coordinate passed to it. (number param = x coord)
 function assembleEq(number, equationComponents){
   
   var total = 0;
- 
+  var coeff = 1;
+  //console.log(equationComponents);
   for(i = 0; i < equationComponents.length; i++){
-    
+    //set exponent to one as default first
 	var exp = 1;
 	//check indices for x variables
     if(equationComponents[i].indexOf('x') >= 0){
-  
       //check for coefficients
       var segment = equationComponents[i];
-      var coeff = segment.substring(0,segment.indexOf('x'));
-      if(coeff === '' || coeff === '+' || coeff === '-'){
+      coeff = segment.substring(0,segment.indexOf('x')); 
+      
+	  //if coeff fits these conditions, the string is like: 'x', '-x', or '+x'
+	  if(coeff === '' || coeff === '+' || coeff === '-'){
         coeff = coeff + 1;
       }
     
       coeff = parseInt(coeff); 
-  
+	  //console.log("coeff: " + coeff + ", number: " + number)
+	  
+	  //this if looks at chunks with just 'x', i.e. '2x' or '-2x' or '+2x'
+	  //in those cases, you want the product of x and the coeff to be part of the total
+	  if(equationComponents[i].indexOf('^') < 0){
+		total += (coeff * number);
+	  }
 	}else if(equationComponents[i-1] !== undefined && equationComponents[i-1].indexOf('x^') > -1){
 		//check for exponents
 		//one way to check for exponents, if there are multiple, may be to see if the previous index has this substring: 'x^'
@@ -94,6 +108,7 @@ function assembleEq(number, equationComponents){
 		var product = Math.pow(number, exp) * coeff;
 		total += product;
 	}else{
+		//this is for if an equation has something like "... + 8" or "... - 10"
 		total += parseInt(equationComponents[i]);
     }
   }
@@ -102,7 +117,9 @@ function assembleEq(number, equationComponents){
 
 /***** get equation components! *****/
 function getEqComp(string){
-
+	
+	var string = string.trim();
+	
 	var newStr = '';
 
 	//modify string to have spaces right before any addition or subtraction places
@@ -149,7 +166,7 @@ for(j = -numOfCoord/2; j <= numOfCoord/2; j++){  //YOU MUST MAKE THIS LOOP USE A
 //dynamically generate a table with all the coordinates
 var table = '<h3>coordinates</h3><table id=\'coords\'><tr><td>x</td><td>y</td></tr>';
 for(i = 0; i < xCoord.length; i++){
-table += '<tr><td>' + xCoord[i] + '</td><td>' + yCoord[i] + '</td></tr>';
+	table += '<tr><td>' + xCoord[i] + '</td><td>' + yCoord[i] + '</td></tr>';
 }
 table += '</table>'
 var t1 = document.getElementById('table');
@@ -168,16 +185,16 @@ var ctx = canvas.getContext("2d");
 
 
 for(i=0;i<xCoord.length;i++){
-//make each point a rectangle!
-var id = ctx.createImageData(1,1);
-var d = id.data;
+	//make each point a rectangle!
+	var id = ctx.createImageData(1,1);
+	var d = id.data;
 
-if(yCoord[i] !== 'undefined'){
-ctx.putImageData(id, xCoord[i]+298, 301-yCoord[i]); //shift graph 10 to the right
-}
+	if(yCoord[i] !== 'undefined'){
+		ctx.putImageData(id, xCoord[i]+298, 301-yCoord[i]); //shift graph 10 to the right
+	}
 
-ctx.fillStyle = curColor;
-ctx.fillRect(xCoord[i]*5+298,301-yCoord[i]*5,5,5);
+	ctx.fillStyle = curColor;
+	ctx.fillRect(xCoord[i]*5+298,301-yCoord[i]*5,5,5);
 }
 };//end button click event
 
@@ -185,7 +202,7 @@ var canvas = document.getElementById('graph');
 var ctx = canvas.getContext("2d");
 
 function clearGrid(){
-ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
 };
 
 clear.onclick = function(){
@@ -209,7 +226,7 @@ ctx.lineJoin = 'round';
 }
 //connect points if you want to
 connect.onclick = function(){
-connectPoints();
+	connectPoints();
 }
 
 //time to draw on the canvas...(make sure the below also goes within the button onclick event!!)
