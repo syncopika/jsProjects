@@ -135,6 +135,9 @@ function evaluateAnswer(){
 	var answerPinyin = (theChar.pinyin).split(',');
 	
 	//for definition, replace all commas with semicolons, then split at comma
+	//interestingly, this: (theChar.definition).replace(new RegExp(/,/, 'g'), ";") 
+	//throws an error on IE11 and I think mobile (but works on desktop Chrome). 
+	//change /,/ to ','.
 	var answerDefinition = (theChar.definition).replace(new RegExp(/,/, 'g'), ";");
 	answerDefinition = answerDefinition.toLowerCase();
 	answerDefinition = answerDefinition.split(';');
