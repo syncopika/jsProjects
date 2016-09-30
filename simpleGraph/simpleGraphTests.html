@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>simple graphing tests</title>
+</head>
+
+<body>
+</body>
+
+</html>
+
+<script>
+//tests for my simple graphing application
+//use the console to check test results.
+
+//make a test object to reduce amount of code to write
+//@Param equation = the equation you want tested
+//@Param xVal = the x value to test the equation with
+//@Param answer = what the equation, with the passed x value, SHOULD result in
+function Test(equation, xVal, answer){
+	//the result instance of Test uses the dependent functions that my graph app relies on
+	this.result = assembleEq(xVal, getEqComp(equation)) === answer;
+	this.printResult = function(){console.log(this.result)};
+}
+
+//here are the dependent functions
+//we need to verify correct output from these functions
+
+//helper function
+//equationComponents is supposed to be an array(the equation split up into chunks)
+//this function actually does the math for each x coordinate passed to it. (number param = x coord)
+function assembleEq(number, equationComponents){
+  
+  var total = 0;
+  var coeff = 1;
+  //console.log(equationComponents);
+  for(i = 0; i < equationComponents.length; i++){
+    //set exponent to one as default first
+	var exp = 1;
+	//check indices for x variables
+    if(equationComponents[i].indexOf('x') >= 0){
+      //check for coefficients
+      var segment = equationComponents[i];
+      coeff = segment.substring(0,segment.indexOf('x')); 
+      
+	  //if coeff fits these conditions, the string is like: 'x', '-x', or '+x'
+	  if(coeff === '' || coeff === '+' || coeff === '-'){
+        coeff = coeff + 1;
+      }
+    
+      coeff = parseInt(coeff); 
+	  //console.log("coeff: " + coeff + ", number: " + number)
+	  
+	  //this if looks at chunks with just 'x', i.e. '2x' or '-2x' or '+2x'
+	  //in those cases, you want the product of x and the coeff to be part of the total
+	  if(equationComponents[i].indexOf('^') < 0){
+		total += (coeff * number);
+	  }
+	}else if(equationComponents[i-1] !== undefined && equationComponents[i-1].indexOf('x^') > -1){
+		//check for exponents
+		//one way to check for exponents, if there are multiple, may be to see if the previous index has this substring: 'x^'
+		var segment2 = equationComponents[i];
+		exp = parseInt(segment2);
+	  
+		var product = Math.pow(number, exp) * coeff;
+		total += product;
+	}else{
+		//this is for if an equation has something like "... + 8" or "... - 10"
+		total += parseInt(equationComponents[i]);
+    }
+  }
+  return total;
+}
+
+/***** get equation components! *****/
+function getEqComp(string){
+	
+	var string = string.trim();
+	
+	var newStr = '';
+
+	//modify string to have spaces right before any addition or subtraction places
+	for(i = 0; i < string.length; i++){
+		if(string[i+1] === '-' || string[i+1] === '+' || string[i] === '^'){
+			newStr += string[i];
+			newStr += ' ';
+		}else{
+			newStr += string[i];
+		}
+	}
+
+	var b = newStr.split(' '); //an array (the user-inputted equation broken into 'chunks') that will be passed to assembleEq();
+
+	//check what the components look like
+	//console.log(b);
+	return b;
+}
+
+//Test(eq, xVal, ans)
+//test 1 (testing constants)
+var test1 = '0'; //f(x) = 0
+console.log("test1: f(x) = 0");
+new Test('0', -600, 0).printResult();
+new Test('0', -1, 0).printResult();
+new Test('0', 0, 0).printResult();
+new Test('0', 1, 0).printResult();
+new Test('0', 400, 0).printResult();
+
+//test 2
+var test2 = '5';
+console.log("test2: f(x) = 5");
+new Test('5', -600, 5).printResult();
+new Test('5', -1, 5).printResult();
+new Test('5', 0, 5).printResult();
+new Test('5', 1, 5).printResult();
+new Test('5', 400, 5).printResult();
+
+//test 3
+var test3 = '-7';
+console.log("test3: f(x) = -7");
+new Test('-7', -600, -7).printResult();
+new Test('-7', -1, -7).printResult();
+new Test('-7', 0, -7).printResult();
+new Test('-7', 1, -7).printResult();
+new Test('-7', 400, -7).printResult();
+
+//test 4
+var test4 = '2x+5';
+console.log("test4: f(x) = 2x+5");
+new Test(test4, -600, -1195).printResult();
+new Test(test4, -1, 3).printResult();
+new Test(test4, 0, 5).printResult();
+new Test(test4, 1, 7).printResult();
+new Test(test4, 400, 805).printResult();
+
+//test 5
+var test5 = '-2x+5';
+console.log("test5: f(x) = -2x+5");
+new Test(test5, -600, 1205).printResult();
+new Test(test5, -1, 7).printResult();
+new Test(test5, 0, 5).printResult();
+new Test(test5, 1, 3).printResult();
+new Test(test5, 400, -795).printResult();
+
+//test 6
+var test6 = '2x^2+10';
+console.log("test6: f(x) = 2x^2+10");
+new Test(test6, -6, 82).printResult();
+new Test(test6, -1, 12).printResult();
+new Test(test6, 0, 10).printResult();
+new Test(test6, 1, 12).printResult();
+new Test(test6, 4, 42).printResult();
+
+//test 7
+var test7 = '-2x^2+10';
+console.log("test7: f(x) = -2x^2+10");
+new Test(test7, -6, -26).printResult();
+new Test(test7, -1, 8).printResult();
+new Test(test7, 0, 10).printResult();
+new Test(test7, 1, 8).printResult();
+new Test(test7, 4, -22).printResult();
+
+//test 8 - test negative exponents
+var test8 = 'x^-2+10';
+console.log("test8: f(x) = x^-2+10");
+new Test(test8, -3, (10+(1/9))).printResult();
+new Test(test8, -1, 11).printResult();
+new Test(test8, 0, Infinity).printResult();
+new Test(test8, 2, 10+(1/4)).printResult();
+new Test(test8, 4, 10+(1/16)).printResult();
+
+</script>
