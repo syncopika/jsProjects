@@ -1,6 +1,8 @@
 # audio_app
 <hr>
 you can check it out here!: http://syncopika.tumblr.com/audioapp    
+
+1/23/17 - I now have a version that applies the karaoke feature and allows download \\(^^)/: https://syncopika.github.io/misc/karaokeget.html
     
 ***notes***    
     
